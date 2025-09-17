@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Flight Offer Details</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background-color: #eef2f5;
+        }
+        .offer-box {
+            border: 1px solid #ccc;
+            padding: 20px;
+            max-width: 600px;
+            background-color: #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .offer-box h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        .offer-box p {
+            margin: 8px 0;
+        }
+        .back-link {
+            margin-top: 20px;
+            display: inline-block;
+            text-decoration: none;
+            color: #007BFF;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="offer-box">
+        <h2>Flight Offer Details</h2>
+
+        <p><strong>🏷️ Airline:</strong> {{ offer.airline if offer.airline else "Unknown" }}</p>
+        <p><strong>✈️ Flight Number:</strong> {{ offer.flight_number if offer.flight_number else "N/A" }}</p>
+        <p><strong>⏱️ Duration:</strong> {{ offer.duration if offer.duration else "N/A" }}</p>
+        <p><strong>🛑 Stops:</strong> {{ offer.stops if offer.stops is defined else "0" }}</p>
+        <p><strong>💺 Cabin Class:</strong> {{ offer.cabin_class if offer.cabin_class else "Economy" }}</p>
+        <p><strong>🏢 Vendor:</strong> {{ offer.vendor if offer.vendor else "Unknown" }}</p>
+        <p><strong>💰 Price:</strong> €{{ offer.price if offer.price else "N/A" }}</p>
+        <p><strong>📍 Origin:</strong> {{ offer.origin if offer.origin else "N/A" }}</p>
+        <p><strong>🎯 Destination:</strong> {{ offer.destination if offer.destination else "N/A" }}</p>
+
+        {% if offer.depart %}
+            <p><strong>🛫 Departure Date:</strong> {{ offer.depart.strftime('%Y-%m-%d %H:%M') }}</p>
+        {% else %}
+            <p><strong>🛫 Departure Date:</strong> Not available</p>
+        {% endif %}
+
+        {% if offer.trip_type == 'round-trip' and offer.return %}
+            🛬 <strong>Return:</strong> {{ offer.return.strftime('%b %d, %Y %H:%M') }}<br>
+        {% endif %}
+
+        {% if offer.link %}
+            <p><a href="{{ offer.link }}" target="_blank" rel="noopener noreferrer">🔗 Book Now</a></p>
+        {% else %}
+            <p><span class="text-muted">No booking link available</span></p>
+        {% endif %}
+    </div>
+
+    <a class="back-link" href="{{ url_for('travel.travel_ui') }}">← Back to Search</a>
+</body>
+</html>

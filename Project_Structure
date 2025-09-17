@@ -1,0 +1,14 @@
+Project Structure
+
+project/
+│
+├── app.py                      # Main Flask app with routing
+├── chatbot.py                  # Common chatbot logic
+├── travel.py                   # Travel chatbot logic
+├── templates/
+│   ├── home.html               # Landing page with bot selection
+│   ├── chatbot_ui.html         # Common chatbot interface
+│   ├── travel_form.html        # Travel chatbot form
+│   └── travel_results.html     # Travel chatbot results
+└── static/
+    └── style.css               # Optional styling

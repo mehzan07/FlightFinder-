@@ -1,0 +1,26 @@
+.view-offer-link {
+    font-size: 1.4em;
+    font-weight: bold;
+    color: #007BFF;
+    text-decoration: none;
+}
+
+.view-offer-link:hover {
+    text-decoration: underline;
+}
+
+/* ✅ TEMPORARILY HIDE CHATBOT ICON FOR DEMO */
+.chatbot-icon,
+#chatbot-launcher {
+    display: none !important;
+}
+
+/* 🧭 Hide return date field for one-way trips */
+#returnDateGroup.hidden {
+    display: none !important;
+}
+
+/* ✨ Optional: Smooth transition for toggling visibility */
+#returnDateGroup {
+    transition: all 0.3s ease-in-out;
+}

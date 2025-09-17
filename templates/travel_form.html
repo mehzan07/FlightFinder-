@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Travel Planner</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+</head>
+<body class="bg-light" style="background: linear-gradient(to right, #e0f7fa, #fff);">
+
+<div class="container mt-5">
+    <h2 class="mb-1">✈️ Plan Your Trip</h2>
+    <p class="text-muted mb-4">Find the best flights, fast.</p>
+
+    {% if errors %}
+    <div class="alert alert-danger">
+        <h5 class="mb-2">⚠️ Please fix the following:</h5>
+        <ul class="mb-0">
+            {% for error in errors %}
+            <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <!--- <form method="POST" class="card p-4 shadow-sm"> --> 
+    <form method="POST" action="/travel-ui" class="card p-4 shadow-sm">
+        <div class="mb-3">
+            <label class="form-label" for="origin">📍 From</label>
+            <input type="text" id="origin" name="origin" class="form-control" required value="{{ form_data.origin if form_data else 'Stockholm' }}">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" for="destination">🎯 To</label>
+            <input type="text" id="destination" name="destination" class="form-control" required value="{{ form_data.destination if form_data else 'Tokyo' }}">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" for="trip_type">🧭 Trip Type</label>
+            <select id="trip_type" name="trip_type" class="form-select">
+                <option value="round-trip" {% if not form_data or form_data.trip_type == 'round-trip' %}selected{% endif %}>Round Trip</option>
+                <option value="one-way" {% if form_data and form_data.trip_type == 'one-way' %}selected{% endif %}>One Way</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" for="date_from">📅 Departure Date</label>
+            <input type="date" id="date_from" name="date_from" class="form-control" required value="{{ form_data.date_from if form_data else '2025-10-10' }}">
+        </div>
+
+        <div class="mb-3" id="returnDateGroup"
+            style="{% if form_data and form_data.trip_type == 'one-way' %}display:none;{% endif %}">
+            <label class="form-label" for="date_to">📅 Return Date</label>
+            <input 
+            type="date" 
+            id="date_to" 
+            name="date_to" 
+            class="form-control"
+            value="{{ form_data.date_to if form_data and form_data.trip_type == 'round-trip' else '2025-10-17' }}"
+            {% if not form_data or form_data.trip_type == 'round-trip' %}required{% endif %}>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" for="passengers">👥 Passengers</label>
+            <input type="number" id="passengers" name="passengers" class="form-control" min="1" required value="{{ form_data.passengers if form_data else 1 }}">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" for="cabin_class">💺 Cabin Class</label>
+            <select id="cabin_class" name="cabin_class" class="form-select" required>
+                <option value="economy" {% if not form_data or form_data.cabin_class == 'economy' %}selected{% endif %}>Economy</option>
+                <option value="business" {% if form_data and form_data.cabin_class == 'business' %}selected{% endif %}>Business</option>
+                <option value="first" {% if form_data and form_data.cabin_class == 'first' %}selected{% endif %}>First</option>
+            </select>
+        </div>
+
+        <div id="loading" class="text-center mb-3" style="display:none;">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p>Searching flights...</p>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Search Flights</button>
+    
+
+    {% if flights %}
+    <div class="mt-5">
+        <h4>🛫 Available Flights</h4>
+        <div class="row">
+            {% for flight in flights %}
+            <div class="col-md-6">
+                <div class="card mb-3 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ flight.airline }}</h5>
+                        <p class="card-text">
+                            {{ flight.depart }}{% if flight.return %} → {{ flight.return }}{% endif %}<br>
+                            Price: €{{ flight.price }}
+                        </p>
+                        {% if flight.link %}
+                            <a href="{{ flight.link }}" class="btn btn-outline-primary" target="_blank">Book Now</a>
+                        {% else %}
+                            <span class="text-muted">No booking link available</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+<script>
+    // ✈️ Autocomplete for city inputs
+    const cities = [
+        "Stockholm", "Copenhagen", "Berlin", "Paris", "London",
+        "Rome", "Madrid", "Amsterdam", "Vienna", "Oslo",
+        "New York", "Tokyo", "Dubai", "Bangkok", "Toronto"
+    ];
+
+    $(function() {
+        $("#origin").autocomplete({ source: cities });
+        $("#destination").autocomplete({ source: cities });
+    });
+
+    // 🗓️ Date validation + loading spinner
+    document.addEventListener("DOMContentLoaded", () => {
+        const dateFrom = document.getElementById("date_from");
+        const dateTo = document.getElementById("date_to");
+        const tripType = document.getElementById("trip_type");
+        const returnDateGroup = document.getElementById("returnDateGroup");
+
+        // Set minimum departure date to today
+        if (dateFrom && dateTo) {
+            const today = new Date().toISOString().split("T")[0];
+            dateFrom.min = today;
+
+            dateFrom.addEventListener("change", () => {
+                dateTo.min = dateFrom.value;
+            });
+        }
+
+        // 🧭 Toggle return date visibility
+        const toggleReturnDate = () => {
+            if (tripType.value === "one-way") {
+                returnDateGroup.style.display = "none";
+                dateTo.required = false;
+                dateTo.value = "";
+            } else {
+                returnDateGroup.style.display = "block";
+                dateTo.required = true;
+            }
+        };
+        tripType.addEventListener("change", toggleReturnDate);
+        toggleReturnDate(); // Run on page load
+
+        // ✅ Show loading spinner with delay before form submission
+        const form = document.querySelector("form");
+        const loading = document.getElementById("loading");
+
+        if (form && loading) {
+            form.addEventListener("submit", (event) => {
+                event.preventDefault();
+                loading.style.display = "block";
+                setTimeout(() => {
+                    form.submit();
+                }, 500);
+            });
+        }
+    });
+</script>
+</body>
+</html>
