@@ -1,14 +1,19 @@
-Project Structure
-
-project/
+flightfinder/
 │
-├── app.py                      # Main Flask app with routing
-├── chatbot.py                  # Common chatbot logic
-├── travel.py                   # Travel chatbot logic
+├── app.py                      # Main Flask app with route registration and app config
+├── flight_search.py            # Core logic for querying Travelpayouts API and handling flight data
+├── travel.py                   # Travel-specific utilities and coe logic 
+├── travel_ui.py                # UI helpers for rendering travel-related views
+├── utils.py                    # Shared utility functions (e.g. date parsing, normalization)
+│
 ├── templates/
-│   ├── home.html               # Landing page with bot selection
-│   ├── chatbot_ui.html         # Common chatbot interface
-│   ├── travel_form.html        # Travel chatbot form
-│   └── travel_results.html     # Travel chatbot results
-└── static/
-    └── style.css               # Optional styling
+│   ├── travel_form.html        # Flight search form interface
+│   ├── travel_results.html     # Displays flight search results from the API
+│   └── travel_offer_results.html  # Displays curated or promotional travel offers
+│
+├── static/
+│   └── style.css               # Custom styles for FlightFinder UI
+│
+├── .env                        # Environment variables (e.g. API token, config flags)
+├── requirements.txt            # Project dependencies
+├── .gitignore                  # Files to exclude from Git tracking
