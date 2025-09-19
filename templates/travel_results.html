@@ -106,7 +106,6 @@
                         🛑 <strong>Stops:</strong> {{ flight.stops }}<br>
                         💺 <strong>Cabin Class:</strong> {{ flight.cabin_class }}<br>
                         🛫 <strong>Depart:</strong> {{ flight.depart.strftime('%b %d, %Y %H:%M') if flight.depart else "Not available" }}<br>
-                        🛬 <strong>Return:</strong>
                         {% if flight.trip_type == 'round-trip' and flight.return %}
                         🛬 <strong>Return:</strong> {{ flight.return.strftime('%b %d, %Y %H:%M') }}<br>
                         {% endif %}
@@ -132,8 +131,12 @@
         <button id="showAllBtn" class="btn btn-primary">Show More Offers</button>
     </div>
     {% endif %}
-    {% endif %}
 
+    {% else %}
+    <div class="no-results text-center mt-5">
+        <p class="fs-5 text-muted">😕 No flights found. Try changing your dates or destination.</p>
+    </div>
+    {% endif %}
 
     {% if debug_payload %}
     <details class="mt-5">
@@ -184,15 +187,15 @@ document.addEventListener("DOMContentLoaded", function () {
             const cards = Array.from(document.querySelectorAll(".flight-card"))
                 .filter(card => card.style.display !== "none");
             const container = document.querySelector(".row.row-cols-1");
-        cards.sort((a, b) => {
-            let valA = a.dataset[sortBy];
-            let valB = b.dataset[sortBy];
+            cards.sort((a, b) => {
+                let valA = a.dataset[sortBy];
+                let valB = b.dataset[sortBy];
 
-            if (sortBy === "price" || sortBy === "duration") {
-                return parseFloat(valA) - parseFloat(valB);
-            }
+                if (sortBy === "price" || sortBy === "duration") {
+                    return parseFloat(valA) - parseFloat(valB);
+                }
 
-            if (sortBy === "depart") {
+                if (sortBy === "depart") {
                 return new Date(valA) - new Date(valB);
             }
 

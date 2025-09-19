@@ -1,26 +1,34 @@
 .view-offer-link {
-    font-size: 1.4em;
-    font-weight: bold;
-    color: #007BFF;
-    text-decoration: none;
+  font-size: 1.4em;
+  font-weight: bold;
+  color: #007bff;
+  text-decoration: none;
 }
 
 .view-offer-link:hover {
-    text-decoration: underline;
+  text-decoration: underline;
 }
 
 /* ✅ TEMPORARILY HIDE CHATBOT ICON FOR DEMO */
 .chatbot-icon,
 #chatbot-launcher {
-    display: none !important;
+  display: none !important;
 }
 
 /* 🧭 Hide return date field for one-way trips */
 #returnDateGroup.hidden {
-    display: none !important;
+  display: none !important;
 }
 
 /* ✨ Optional: Smooth transition for toggling visibility */
 #returnDateGroup {
-    transition: all 0.3s ease-in-out;
+  transition: all 0.3s ease-in-out;
+}
+
+/* 😕 Fallback message when no flights are found */
+.no-results {
+  text-align: center;
+  margin-top: 2rem;
+  font-size: 1.2rem;
+  color: #555;
 }

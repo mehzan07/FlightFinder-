@@ -6,12 +6,12 @@ from flight_search import search_flights
 from iata_codes import city_to_iata
 from mock_data import AIRLINE_NAMES  # ✅ Added import
 from datetime import date, datetime
+from flask import request
 
 from dotenv import load_dotenv
 import os
 load_dotenv()
-AFFILIATE_ID = os.getenv("AFFILIATE_ID")
-
+AFFILIATE_MARKER = os.getenv("AFFILIATE_MARKER")
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -20,7 +20,7 @@ logger.setLevel(logging.INFO)
 def generate_affiliate_link(origin, destination, date_from, date_to, passengers):
     base_url = "https://www.aviasales.com/search"
     search_code = f"{origin.upper()}{date_from.strftime('%d%m')}{destination.upper()}{date_to.strftime('%d%m')}"
-    return f"{base_url}/{search_code}?adults={passengers}&utm_source={AFFILIATE_ID}"
+    return f"{base_url}/{search_code}?adults={passengers}&utm_source={AFFILIATE_MARKER}"
 
 
 def travel_chatbot(user_input: str, trip_type: str = "round-trip") -> dict:
@@ -90,8 +90,25 @@ def travel_chatbot(user_input: str, trip_type: str = "round-trip") -> dict:
     date_from_str = info["date_from"].strftime("%Y-%m-%d") if info.get("date_from") else ""
     date_to_str = info["date_to"].strftime("%Y-%m-%d") if info.get("date_to") else ""
     passengers = info.get("passengers", 1)
+    
+    adults = int(request.form.get("passengers", 1))
+    cabin_class = request.form.get("cabin_class", "economy")
+    children = 0  # You can add a form field later if needed
+    infants = 0   # Same here 
+          
 
-    flights = search_flights(origin_code, destination_code, date_from_str, date_to_str, trip_type )
+    #flights = search_flights(origin_code, destination_code, date_from_str, date_to_str, trip_type )
+    flights = search_flights(
+    origin_code,
+    destination_code,
+    date_from_str,
+    date_to_str,
+    trip_type,
+    adults=adults,
+    children=children,
+    infants=infants,
+    cabin_class=cabin_class
+)
 
     if not flights:
         return {

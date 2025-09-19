@@ -19,8 +19,8 @@ load_dotenv()
 IS_LOCAL = os.getenv("IS_LOCAL", "false").lower() == "true"
 if IS_LOCAL:
     logging.info("Running in local mode — using mock API")
-    
-AFFILIATE_ID =  os.getenv("AFFILIATE_ID")
+
+AFFILIATE_MARKER = os.getenv("AFFILIATE_MARKER")
 
 FLASK_ENV = os.getenv("FLASK_ENV", "development")
 PORT = int(os.getenv("PORT", 10000))
@@ -29,6 +29,7 @@ MARKER = os.getenv("TRAVELPAYOUTS_MARKER")
 
 # === Initialize Flask app ===
 app = Flask(__name__, static_folder="static")
+app.secret_key = os.getenv("SECRET_KEY", "flightfinder-secret")  # Required for session
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 app.config['ENV'] = FLASK_ENV
 app.config['DEBUG'] = FLASK_ENV == "development"
@@ -43,17 +44,16 @@ logging.basicConfig(
     handlers=[logging.StreamHandler()]
 )
 
-
 # Redirects root URL ('/') to the main FlightFinder route.
 @app.route("/", methods=["GET"])
 def home_page():
     return redirect("/flightfinder")
 
-
 # === Primary FlightFinder Route ===
 @app.route("/flightfinder", methods=["GET", "POST"])
 def flightfinder():
     print("FlightFinder route triggered", flush=True)
+
     if request.method == "POST":
         user_input = request.form.get("user_input", "")
         info = extract_travel_entities(user_input)
@@ -70,7 +70,29 @@ def flightfinder():
         info["date_from_str"] = info["date_from"].strftime("%Y-%m-%d")
         info["date_to_str"] = info["date_to"].strftime("%Y-%m-%d")
 
-        flights = search_flights(origin_code, destination_code, info["date_from_str"], info["date_to_str"])
+        # ✅ Extract dynamic values from form
+        trip_type = request.form.get("trip_type", "round-trip")
+        adults = int(request.form.get("passengers", 1))
+        children = 0
+        infants = 0
+        cabin_class = request.form.get("cabin_class", "economy")
+
+        # ✅ Store last search in session
+        session["last_search"] = {
+            "origin": origin_code,
+            "destination": destination_code,
+            "departure": info["date_from_str"],
+            "return": info["date_to_str"]
+        }
+
+        # ✅ Call the search function with all required arguments
+        flights = search_flights(
+            origin_code, destination_code,
+            info["date_from_str"], info["date_to_str"],
+            trip_type=trip_type,
+            adults=adults, children=children, infants=infants,
+            cabin_class=cabin_class
+        )
 
         if not flights:
             return render_template("travel_results.html", message="😕 No flights found. Please try a different search.")
@@ -96,9 +118,6 @@ def confirm():
     return render_template("confirmation.html", flight=selected_flight)
 
 # === Health Check ===
-#The /health endpoint is confirm your app is running and responsive. when
-#- You deploy to Render, set up automated monitoring, to want a quick way to test that your Flask app is alive
-# you can test : http://localhost:5000/health then shows:{"status":"ok","timestamp":"2025-09-17T10:50:24.969686"}
 @app.route("/health", methods=["GET"])
 def health():
     return jsonify({'status': 'ok', 'timestamp': datetime.utcnow().isoformat()})
