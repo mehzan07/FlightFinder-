@@ -10,15 +10,20 @@ import hashlib
 load_dotenv()
 
 AFFILIATE_MARKER = os.getenv("AFFILIATE_MARKER")
+print("🔑 API_TOKEN:", AFFILIATE_MARKER)
+
 API_TOKEN = os.getenv("API_TOKEN")
+print("🔑 API_TOKEN:", API_TOKEN)
+
 HOST = os.getenv("HOST", "localhost")
 USER_IP = os.getenv("USER_IP", "127.0.0.1")
 USE_REAL_API = os.getenv("USE_REAL_API", "False").lower() == "true"
+DEBUG_MODE = os.getenv("DEBUG_MODE", "False").lower() == "true"
 
 def search_flights(origin_code, destination_code, date_from_str, date_to_str, trip_type, adults=1, children=0, infants=0, cabin_class="economy"):
     if USE_REAL_API:
         return search_flights_api(origin_code, destination_code, date_from_str, date_to_str,
-                                  trip_type, adults, children, infants, cabin_class)
+                                    trip_type, adults, children, infants, cabin_class)
     else:
         return search_flights_mock(origin_code, destination_code, date_from_str, date_to_str, trip_type)
 
@@ -34,85 +39,89 @@ def generate_flight_id(link, airline, departure):
     return hashlib.md5(raw.encode()).hexdigest()
 
 def generate_signature(token, marker, host, user_ip, locale, trip_class, passengers, segments):
-    values = []
+    # Build raw string in exact order required by Travelpayouts
+    raw_string = (
+        f"{token}:{host}:{locale}:{marker}:"
+        f"{passengers['adults']}:{passengers['children']}:{passengers['infants']}:"
+        f"{segments[0]['date']}:{segments[0]['destination']}:{segments[0]['origin']}:"
+        f"{segments[1]['date']}:{segments[1]['destination']}:{segments[1]['origin']}:"
+        f"{trip_class}:{user_ip}"
+    )
 
-    values.append(host)
-    values.append(locale)
-    values.append(marker)
-
-    for key in ["adults", "children", "infants"]:
-        values.append(str(passengers.get(key, 0)))
-
-    for segment in segments:
-        for key in ["date", "destination", "origin"]:
-            values.append(str(segment.get(key)))
-
-    values.append(trip_class)
-    values.append(user_ip)
-
-    raw_string = f"{token}:" + ":".join(values)
-    print("🔐 Raw signature string:", raw_string)  # ✅ Add this line
+    print("🔍 Raw string used for signature:", raw_string)
     return hashlib.md5(raw_string.encode()).hexdigest()
+
 
 def search_flights_api(origin_code, destination_code, date_from_str, date_to_str=None,
                        trip_type="round-trip", adults=1, children=0, infants=0, cabin_class="economy"):
 
     init_url = "https://api.travelpayouts.com/v1/flight_search"
 
-    segments = [
-    {
+    segments = [{
         "date": date_from_str,
         "destination": destination_code,
         "origin": origin_code
-    }
-]
+    }]
     if trip_type == "round-trip" and date_to_str:
-     segments.append({
-        "date": date_to_str,
-        "destination": origin_code,
-        "origin": destination_code
-    })
+        segments.append({
+            "date": date_to_str,
+            "destination": origin_code,
+            "origin": destination_code
+        })
+
+    passengers = {
+        "adults": int(adults),
+        "children": int(children),
+        "infants": int(infants)
+    }
+    trip_class_code = map_cabin_class(cabin_class)
+
+    signature = generate_signature(
+        token=API_TOKEN,
+        marker=AFFILIATE_MARKER,
+        host=HOST,
+        user_ip=USER_IP,
+        locale="en",
+        trip_class=trip_class_code,
+        passengers=passengers,
+        segments=segments
+    )
+    print("🔑 signature:", signature)
 
     payload = {
         "marker": AFFILIATE_MARKER,
         "host": HOST,
         "user_ip": USER_IP,
         "locale": "en",
-        "trip_class": map_cabin_class(cabin_class),
-        "passengers": {
-            "adults": int(adults),
-            "children": int(children),
-            "infants": int(infants)
-        },
-        "segments": segments
+        "trip_class": trip_class_code,
+        "passengers": passengers,
+        "segments": segments,
+        "signature": signature
     }
 
-    payload["signature"] = generate_signature(
-        token=API_TOKEN,
-        marker=AFFILIATE_MARKER,
-        host=HOST,
-        user_ip=USER_IP,
-        locale="en",
-        trip_class=cabin_class.upper(),
-        passengers=payload["passengers"],
-        segments=payload["segments"]
-    )
-
-    headers = {
-        "Content-Type": "application/json"
-    }
+    headers = {"Content-Type": "application/json"}
 
     print(f"🌐 Initiating search: {init_url}")
     print("📦 Final JSON payload:")
     print(json.dumps(payload, indent=2))
 
     try:
+        if DEBUG_MODE:
+            print("\n📤 Sending POST request to Travelpayouts API")
+            print(f"🔗 Endpoint: {init_url}")
+            print("🧾 Headers:")
+            print(headers)
+            print("📦 Payload:")
+            print(json.dumps(payload, indent=2))
+
         response = requests.post(init_url, json=payload, headers=headers)
-        print(f"📥 Raw response: {response.text}")
+        if DEBUG_MODE:
+            print(f"📥 Raw response: {response.text}")
         if response.status_code != 200:
             print(f"❌ API error: {response.status_code}")
             return []
         search_id = response.json().get("search_id") or response.json().get("uuid")
+        print(f"🔗 search_id: {search_id}")
         if not search_id:
             print("❌ No search_id returned")
             return []
@@ -123,15 +132,21 @@ def search_flights_api(origin_code, destination_code, date_from_str, date_to_str
     results_url = f"https://api.travelpayouts.com/v1/flight_search_results?uuid={search_id}"
     print(f"🔄 Polling results from: {results_url}")
 
-    proposals = []
+    raw_proposals = []
     for attempt in range(5):
         try:
             time.sleep(3)
             results_response = requests.get(results_url)
-            print(f"📥 Results response: {results_response.text}")
+            print(f"🔗 results_response.status_code: {results_response.status_code}")
+            # if DEBUG_MODE:
+            # print(f"📥 Results response: {results_response.text}")
             if results_response.status_code == 200:
-                proposals = results_response.json()
-                if proposals:
+                proposals_chunks = results_response.json()
+                for chunk in proposals_chunks:
+                    chunk_proposals = chunk.get("proposals", [])
+                    if chunk_proposals:
+                        raw_proposals.extend(chunk_proposals)
+                if raw_proposals:
                     break
             else:
                 print(f"⚠️ Attempt {attempt+1}: Status {results_response.status_code}")
@@ -143,37 +158,73 @@ def search_flights_api(origin_code, destination_code, date_from_str, date_to_str
         return []
 
     filtered = []
-    print(f"\n🌐 API returned {len(proposals)} proposals")
+    print(f"\n🌐 API returned {len(raw_proposals)} proposals")
 
-    for item in proposals:
-        for proposal in item.get("proposals", []):
-            terms = proposal.get("terms", {})
-            for gate_id, term_data in terms.items():
-                price = term_data.get("price")
-                currency = term_data.get("currency")
-                url_code = term_data.get("url")
-                airline = proposal.get("carriers", ["Unknown"])[0]
-                segment = proposal.get("segment", [])
-                departure = segment[0]["flight"][0]["departure"] if segment else "Unknown"
+    for proposal in raw_proposals:
+        terms = proposal.get("terms", {})
+        for gate_id, term_data in terms.items():
+            price = term_data.get("price")
+            currency = term_data.get("currency")
+            url_code = term_data.get("url")
+            booking_link = f"https://www.travelpayouts.com/redirect/{url_code}" if url_code else None
 
-                booking_link = f"https://www.travelpayouts.com/redirect/{url_code}"
+            segment = proposal.get("segment", [])
+            all_flights = []
+            for seg in segment:
+                all_flights.extend(seg.get("flight", []))
 
-                print(f"✅ API Flight link: {booking_link}")
+            if not all_flights:
+                continue
 
-                filtered.append({
-                    "id": generate_flight_id(booking_link, airline, departure),
-                    "airline": airline,
-                    "price": price,
-                    "currency": currency,
-                    "depart": departure,
-                    "vendor": "Travelpayouts",
-                    "link": booking_link,
-                    "trip_type": trip_type
-                })
+            first_leg = all_flights[0]
+            last_leg = all_flights[-1]
+
+            airline = first_leg.get("marketing_carrier", "Unknown")
+            flight_number = first_leg.get("number", "Not available")
+            departure = f"{first_leg.get('departure_date', '')} {first_leg.get('departure_time', '')}".strip()
+            arrival = f"{last_leg.get('arrival_date', '')} {last_leg.get('arrival_time', '')}".strip()
+            origin = first_leg.get("departure", "")
+            destination = last_leg.get("arrival", "")
+            duration = sum(f.get("duration", 0) for f in all_flights)
+            stops = len(all_flights) - 1
+
+            if not booking_link or not departure or not price:
+                if DEBUG_MODE:
+                    print("⛔ Skipping incomplete proposal")
+                continue
+
+            filtered.append({
+                "id": generate_flight_id(booking_link, airline, departure),
+                "airline": airline or "Airline not specified",
+                "flight_number": flight_number or "Not available",
+                "depart": departure,
+                "arrival": arrival,
+                "origin": origin,
+                "destination": destination,
+                "duration": duration,
+                "stops": stops,
+                "price": price,
+                "currency": currency,
+                "vendor": "Travelpayouts",
+                "link": booking_link,
+                "trip_type": trip_type,
+                "cabin_class": cabin_class
+            })
+
+            if len(filtered) >= 30:
+                break
+
+    filtered.sort(key=lambda x: (
+        x["airline"] != "Airline not specified",
+        x["flight_number"] != "Not available",
+        x["depart"] != "Departure time not available",
+        x.get("price", float("inf"))
+    ), reverse=True)
 
     print(f"\n🎯 Total matching flights from API: {len(filtered)}")
     return filtered
 
+# this function is only for demo
 def search_flights_mock(origin_code, destination_code, date_from_str, date_to_str, trip_type):
     try:
         date_from = datetime.strptime(date_from_str, "%Y-%m-%d").date()
@@ -234,10 +285,10 @@ def search_flights_mock(origin_code, destination_code, date_from_str, date_to_st
     print(f"\n🎯 Total matching flights: {len(filtered)}")
 
     if skipped_flights:
-        print(f"\n🚫 Total skipped flights due to invalid deep_link: {len(skipped_flights)}")
-        for i, f in enumerate(skipped_flights, 1):
-            print(f"{i}. {f}")
-
+            print(f"\n🚫 Total skipped flights due to invalid deep_link: {len(skipped_flights)}")
+            for i, f in enumerate(skipped_flights, 1):
+                print(f"{i}. {f}")
+                
     return filtered
 
 

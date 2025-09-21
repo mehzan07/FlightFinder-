@@ -26,6 +26,8 @@ FLASK_ENV = os.getenv("FLASK_ENV", "development")
 PORT = int(os.getenv("PORT", 10000))
 API_TOKEN = os.getenv("TRAVELPAYOUTS_API_TOKEN")
 MARKER = os.getenv("TRAVELPAYOUTS_MARKER")
+DEBUG_MODE = os.getenv("DEBUG_MODE", "False").lower() == "true"
+
 
 # === Initialize Flask app ===
 app = Flask(__name__, static_folder="static")
@@ -55,7 +57,7 @@ def flightfinder():
     print("FlightFinder route triggered", flush=True)
 
     if request.method == "POST":
-        user_input = request.form.get("user_input", "")
+        user_input = request.form.get("user_input", "").strip()
         info = extract_travel_entities(user_input)
 
         origin_code = city_to_iata.get(info["origin"].lower())
@@ -73,16 +75,21 @@ def flightfinder():
         # ✅ Extract dynamic values from form
         trip_type = request.form.get("trip_type", "round-trip")
         adults = int(request.form.get("passengers", 1))
-        children = 0
-        infants = 0
-        cabin_class = request.form.get("cabin_class", "economy")
+        children = int(request.form.get("children", 0))
+        infants = int(request.form.get("infants", 0))
+        cabin_class = request.form.get("cabin_class", "economy").lower()
 
         # ✅ Store last search in session
         session["last_search"] = {
             "origin": origin_code,
             "destination": destination_code,
             "departure": info["date_from_str"],
-            "return": info["date_to_str"]
+            "return": info["date_to_str"],
+            "trip_type": trip_type,
+            "adults": adults,
+            "children": children,
+            "infants": infants,
+            "cabin_class": cabin_class
         }
 
         # ✅ Call the search function with all required arguments
@@ -95,7 +102,8 @@ def flightfinder():
         )
 
         if not flights:
-            return render_template("travel_results.html", message="😕 No flights found. Please try a different search.")
+            fallback_message = "😕 No flights found or API error occurred. Try again later or adjust your search."
+            return render_template("travel_results.html", message=fallback_message, info=info)
 
         return render_template("travel_results.html", flights=flights, info=info)
 

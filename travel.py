@@ -68,10 +68,15 @@ def travel_chatbot(user_input: str, trip_type: str = "round-trip") -> dict:
             "affiliate_link": None,
             "trip_info": {}
         }
-
-    origin_code = city_to_iata.get(info["origin"].lower())
-    destination_code = city_to_iata.get(info["destination"].lower())
-    logger.info(f"Origin IATA: {origin_code}, Destination IATA: {destination_code}")
+      # this is for demo:
+    # origin_code = city_to_iata.get(info["origin"].lower())
+    # destination_code = city_to_iata.get(info["destination"].lower())
+    # logger.info(f"Origin IATA: {origin_code}, Destination IATA: {destination_code}")
+    
+    # in real api call:
+    origin_code = info["origin_code"].upper()
+    destination_code = info["destination_code"].upper()
+    logger.info(f"origin_code: {origin_code}, destination_code: {destination_code}")
 
     if not origin_code or not destination_code:
         sample_cities = ", ".join(list(city_to_iata.keys())[:5])
@@ -97,7 +102,6 @@ def travel_chatbot(user_input: str, trip_type: str = "round-trip") -> dict:
     infants = 0   # Same here 
           
 
-    #flights = search_flights(origin_code, destination_code, date_from_str, date_to_str, trip_type )
     flights = search_flights(
     origin_code,
     destination_code,
@@ -156,8 +160,8 @@ def travel_chatbot(user_input: str, trip_type: str = "round-trip") -> dict:
     )
 
     trip_info = {
-    "origin": info["origin"],
-    "destination": info["destination"],
+    "origin": info["origin_code"],
+    "destination": info["destination_code"],
     "departure_date": info["date_from"].strftime('%Y-%m-%d') if info.get("date_from") else "",
     "return_date": info["date_to"].strftime('%Y-%m-%d') if info.get("date_to") else "",
     "passengers": passengers,

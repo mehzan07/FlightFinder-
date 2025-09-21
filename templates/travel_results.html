@@ -80,17 +80,12 @@
 
     <section class="row row-cols-1 row-cols-md-3 g-4">
         {% for flight in flights %}
-        {% if flight.depart %}
-            {% set depart_iso = flight.depart.strftime('%Y-%m-%dT%H:%M') %}
-        {% else %}
-            {% set depart_iso = '' %}
-        {% endif %}
         <article class="col flight-card {% if loop.index0 >= 3 %}d-none extra-offer{% endif %}"
                 data-price="{{ flight.price }}"
                 data-airline="{{ flight.airline }}"
                 data-stops="{{ flight.stops }}"
                 data-duration="{{ flight.duration }}"
-                data-depart="{{ depart_iso }}">
+                data-depart="{{ flight.depart }}">
             <div class="card h-100 shadow-sm {% if loop.index0 == 0 %}border-success{% endif %}">
                 <div class="card-body">
                     <h5 class="card-title">
@@ -102,13 +97,12 @@
                     <p class="card-text">
                         🏷️ <strong>Airline:</strong> {{ flight.airline }}<br>
                         ✈️ <strong>Flight Number:</strong> {{ flight.flight_number }}<br>
-                        ⏱️ <strong>Duration:</strong> {{ flight.duration }}<br>
+                        ⏱️ <strong>Duration:</strong> {{ flight.duration }} minutes<br>
                         🛑 <strong>Stops:</strong> {{ flight.stops }}<br>
                         💺 <strong>Cabin Class:</strong> {{ flight.cabin_class }}<br>
-                        🛫 <strong>Depart:</strong> {{ flight.depart.strftime('%b %d, %Y %H:%M') if flight.depart else "Not available" }}<br>
-                        {% if flight.trip_type == 'round-trip' and flight.return %}
-                        🛬 <strong>Return:</strong> {{ flight.return.strftime('%b %d, %Y %H:%M') }}<br>
-                        {% endif %}
+                        🛫 <strong>Depart:</strong> {{ flight.depart if flight.depart else "Not available" }}<br>
+                        🛬 <strong>Arrive:</strong> {{ flight.arrival if flight.arrival else "Not available" }}<br>
+                        🌍 <strong>Route:</strong> {{ flight.origin }} → {{ flight.destination }}<br>
                         💰 <strong>Price:</strong> €{{ flight.price }}<br>
                         🏢 <strong>Vendor:</strong> {{ flight.vendor }}
                     </p>
@@ -196,15 +190,15 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
 
                 if (sortBy === "depart") {
-                return new Date(valA) - new Date(valB);
-            }
+                    return new Date(valA) - new Date(valB);
+                }
 
-            return 0;
+                return 0;
+            });
+
+            cards.forEach(card => container.appendChild(card));
         });
-
-        cards.forEach(card => container.appendChild(card));
-    });
-}
+    }
 
     {% if show_more %}
     const showAllBtn = document.getElementById("showAllBtn");
@@ -214,8 +208,9 @@ document.addEventListener("DOMContentLoaded", function () {
             this.style.display = "none";
         });
     }
-    {% endif %}
+{% endif %}
 });
 </script>
 </body>
 </html>
+   

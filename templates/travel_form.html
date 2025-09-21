@@ -24,15 +24,27 @@
 
     <form method="POST" action="/travel-ui" class="card p-4 shadow-sm">
         <div class="mb-3">
-            <label class="form-label" for="origin">📍 From</label>
-            <input type="text" id="origin" name="origin" class="form-control" required
-                   value="{{ session.last_search.origin if session.last_search else form_data.origin if form_data else 'Stockholm' }}">
+            <label class="form-label" for="origin_city">📍 From (City)</label>
+            <input type="text" id="origin_city" name="origin_city" class="form-control" placeholder="e.g. Stockholm" required
+                   value="{{ form_data.origin_city if form_data else '' }}">
         </div>
 
         <div class="mb-3">
-            <label class="form-label" for="destination">🎯 To</label>
-            <input type="text" id="destination" name="destination" class="form-control" required
-                   value="{{ session.last_search.destination if session.last_search else form_data.destination if form_data else 'Tokyo' }}">
+            <label class="form-label" for="origin_code">✈️ Select Origin Airport</label>
+            <input type="text" id="origin_code" name="origin_code" class="form-control" placeholder="e.g. ARN" required
+                   value="{{ form_data.origin_code if form_data else '' }}">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" for="destination_city">🎯 To (City)</label>
+            <input type="text" id="destination_city" name="destination_city" class="form-control" placeholder="e.g. Tokyo" required
+                   value="{{ form_data.destination_city if form_data else '' }}">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" for="destination_code">🛬 Select Destination Airport</label>
+            <input type="text" id="destination_code" name="destination_code" class="form-control" placeholder="e.g. HND" required
+                   value="{{ form_data.destination_code if form_data else '' }}">
         </div>
 
         <div class="mb-3">
@@ -79,45 +91,46 @@
 
         <button type="submit" class="btn btn-primary">Search Flights</button>
 
-    {% if flights %}
-    <div class="mt-5">
-        <h4>🛫 Available Flights</h4>
-        <div class="row">
-            {% for flight in flights %}
-            <div class="col-md-6">
-                <div class="card mb-3 shadow-sm">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ flight.airline }}</h5>
-                        <p class="card-text">
-                            {{ flight.depart }}{% if flight.return %} → {{ flight.return }}{% endif %}<br>
-                            Price: €{{ flight.price }}
-                        </p>
-                        {% if flight.link %}
-                            <a href="{{ flight.link }}" class="btn btn-outline-primary" target="_blank">Book Now</a>
-                        {% else %}
-                            <span class="text-muted">No booking link available</span>
-                        {% endif %}
+        {% if flights %}
+        <div class="mt-5">
+            <h4>🛫 Available Flights</h4>
+            <div class="row">
+                {% for flight in flights %}
+                <div class="col-md-6">
+                    <div class="card mb-3 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ flight.airline }}</h5>
+                            <p class="card-text">
+                                {{ flight.depart }}{% if flight.return %} → {{ flight.return }}{% endif %}<br>
+                                Price: €{{ flight.price }}
+                            </p>
+                            {% if flight.link %}
+                                <a href="{{ flight.link }}" class="btn btn-outline-primary" target="_blank">Book Now</a>
+                            {% else %}
+                                <span class="text-muted">No booking link available</span>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
+                {% endfor %}
             </div>
-            {% endfor %}
         </div>
-    </div>
-    {% endif %}
+        {% endif %}
+    </form>
 </div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
 <script>
-    const cities = [
-        "Stockholm", "Copenhagen", "Berlin", "Paris", "London",
-        "Rome", "Madrid", "Amsterdam", "Vienna", "Oslo",
-        "New York", "Tokyo", "Dubai", "Bangkok", "Toronto"
+    const airports = [
+        "Stockholm Arlanda (ARN)", "Stockholm Bromma (BMA)", "Tokyo Haneda (HND)", "Tokyo Narita (NRT)",
+        "London Heathrow (LHR)", "Paris Charles de Gaulle (CDG)", "New York JFK (JFK)", "Dubai (DXB)",
+        "Bangkok Suvarnabhumi (BKK)", "Toronto Pearson (YYZ)", "Copenhagen Kastrup (CPH)", "Rome Fiumicino (FCO)"
     ];
 
     $(function() {
-        $("#origin").autocomplete({ source: cities });
-        $("#destination").autocomplete({ source: cities });
+        $("#origin_code").autocomplete({ source: airports });
+        $("#destination_code").autocomplete({ source: airports });
     });
 
     document.addEventListener("DOMContentLoaded", () => {

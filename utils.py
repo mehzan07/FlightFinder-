@@ -66,13 +66,30 @@ def extract_travel_entities(user_input: str) -> Dict[str, Any]:
 
     print(f"📅 Parsed dates: from={info.get('date_from')} to={info.get('date_to')}")
 
-    # ✈️ Extract origin and destination
-    from_match = re.search(r'from\s+([a-zA-Z\s]+?)\s+(?:to|until)', input_lower)
-    to_match = re.search(r'to\s+([a-zA-Z\s]+?)\s+(?:from|on|until)', input_lower)
-    if from_match:
-        info["origin"] = from_match.group(1).strip()
-    if to_match:
-        info["destination"] = to_match.group(1).strip()
+     # ✈️ Extract origin and destination city names
+    origin_match = re.search(r'from\s+([a-zA-Z\s]+?)\s*\(', user_input)
+    destination_match = re.search(r'to\s+([a-zA-Z\s]+?)\s*\(', user_input)
+
+    if origin_match:
+        info["origin"] = origin_match.group(1).strip()
+    if destination_match:
+        info["destination"] = destination_match.group(1).strip()
+
+    # ✈️ Extract airport codes from parentheses
+    iata_matches = re.findall(r'\(\s*([A-Z]{3})\s*\)', user_input)
+    if len(iata_matches) >= 2:
+        info["origin_code"] = iata_matches[0].strip().upper()
+        info["destination_code"] = iata_matches[1].strip().upper()
+    elif len(iata_matches) == 1:
+        info["origin_code"] = iata_matches[0].strip().upper()
+        info["destination_code"] = ""  # fallback
+        
+# 🧠 Optional: fallback if city names weren't matched
+    if not info.get("origin") and "origin_code" in info:
+        info["origin"] = info["origin_code"]
+    if not info.get("destination") and "destination_code" in info:
+        info["destination"] = info["destination_code"]
+
 
     # 👥 Extract number of passengers
     passengers_match = re.search(r'for\s+(\d+)\s+passengers?', input_lower)
