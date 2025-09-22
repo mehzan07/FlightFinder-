@@ -84,13 +84,14 @@ def flightfinder():
             "origin": origin_code,
             "destination": destination_code,
             "departure": info["date_from_str"],
-            "return": info["date_to_str"],
+            "arrival": info["date_to_str"],  # ✅ Renamed for clarity
             "trip_type": trip_type,
             "adults": adults,
             "children": children,
             "infants": infants,
             "cabin_class": cabin_class
         }
+
 
         # ✅ Call the search function with all required arguments
         flights = search_flights(
@@ -114,8 +115,8 @@ def flightfinder():
 def results():
     destination = request.form['destination']
     departure_date = request.form['departure_date']
-    return_date = request.form['return_date']
-    result = travel_form_handler(destination, departure_date, return_date)
+    arrival_date = request.form['arrival_date']
+    result = travel_form_handler(destination, departure_date, arrival_date)
     return render_template("travel_results.html", **result)
 
 @app.route("/confirm", methods=["POST"])

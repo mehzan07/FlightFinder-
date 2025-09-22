@@ -29,7 +29,8 @@ def mock_kiwi_response():
     }
 
     base_departure = datetime(2025, 10, 10, 6, 0)
-    base_return = datetime(2025, 10, 17, 18, 0)
+    base_arrival = datetime(2025, 10, 17, 18, 0)
+
 
     raw_flights = []
     flight_id = 1
@@ -49,7 +50,7 @@ def mock_kiwi_response():
                 "destination": destination,
                 "price": 100 + i * 10,
                 "departure": base_departure + timedelta(hours=i * 2),
-               "return": base_return + timedelta(minutes=(i % 16) * 60),
+               "arrival": base_arrival + timedelta(minutes=(i % 16) * 60),
                 "airlines": [airline_display],  # ✅ Full name with code
                 "flight_number": flight_number,
                 "duration": duration,

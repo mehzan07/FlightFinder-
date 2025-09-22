@@ -17,8 +17,8 @@
     <section class="alert alert-info text-center">
         <p>✈️ Trip from <strong>{{ trip_info.origin }}</strong> to <strong>{{ trip_info.destination }}</strong></p>
         <p>📅 Departure: <strong>{{ trip_info.departure_date }}</strong></p>
-        {% if trip_info.return_date %}
-        <p>📅 Return: <strong>{{ trip_info.return_date }}</strong></p>
+        {% if trip_info.arrival_date %}
+        <p>📅 Return: <strong>{{ trip_info.arrival_date }}</strong></p>
         {% endif %}
         <p>👥 Passengers: <strong>{{ trip_info.passengers }}</strong></p>
         <p>💺 Class: <strong>{{ trip_info.cabin_class }}</strong></p>

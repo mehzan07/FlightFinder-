@@ -49,7 +49,7 @@ def travel_chatbot(user_input: str, trip_type: str = "round-trip") -> dict:
         
     if trip_type != "one-way":
         if "date_to" not in info or not isinstance(info["date_to"], (datetime, date)):
-            missing_fields.append("return date")
+            missing_fields.append("arrival date")
 
     if missing_fields:
         return {
@@ -63,7 +63,7 @@ def travel_chatbot(user_input: str, trip_type: str = "round-trip") -> dict:
     if trip_type != "one-way" and info["date_from"] > info["date_to"]:
         return {
             "flights": [],
-            "message": "⏳ Your return date must be after your departure date.",
+            "message": "⏳ Your arrival date must be after your departure date.",
             "summary": None,
             "affiliate_link": None,
             "trip_info": {}
@@ -128,16 +128,17 @@ def travel_chatbot(user_input: str, trip_type: str = "round-trip") -> dict:
     sorted_flights = sorted(flights, key=lambda x: x["price"])
     
     for flight in sorted_flights:
-        airline_code = flight.get("airlines", ["Unknown"])[0]
+        airline_code = flight.get("airline", "Unknown")
         airline_name = AIRLINE_NAMES.get(airline_code, airline_code)
+
         trip_type = flight.get("trip_type", "round-trip")  # fallback if missing
 
 
         prepared_flights.append({
             "id": flight["id"],
             "price": flight.get("price"),
-            "depart": flight.get("departure"),
-            "return": flight.get("return"),
+            "depart": flight.get("depart"),
+            "arrival": flight.get("arrival"),
             "airline": airline_name,
             "flight_number": flight.get("flight_number", "N/A"),
             "duration": flight.get("duration", "N/A"),
@@ -146,7 +147,7 @@ def travel_chatbot(user_input: str, trip_type: str = "round-trip") -> dict:
             "vendor": flight.get("vendor", "Unknown"),
             "origin": flight.get("origin", "Unknown"),
             "destination": flight.get("destination", "Unknown"),
-            "link": flight.get("deep_link"),
+            "link": flight.get("link"),
             "trip_type": trip_type
         })
 
@@ -163,7 +164,7 @@ def travel_chatbot(user_input: str, trip_type: str = "round-trip") -> dict:
     "origin": info["origin_code"],
     "destination": info["destination_code"],
     "departure_date": info["date_from"].strftime('%Y-%m-%d') if info.get("date_from") else "",
-    "return_date": info["date_to"].strftime('%Y-%m-%d') if info.get("date_to") else "",
+    "arrival_date": info["date_to"].strftime('%Y-%m-%d') if info.get("date_to") else "",
     "passengers": passengers,
     "trip_type": info.get("trip_type", "round-trip")  # fallback if missing
 }
@@ -194,7 +195,7 @@ def travel_form_handler(form_data):
     origin = form_data.get("origin", "").strip()
     destination = form_data.get("destination", "").strip()
     departure_date = form_data.get("departure_date", "")
-    return_date = form_data.get("return_date", "")
+    arrival_date = form_data.get("arrival_date", "")
     passengers = int(form_data.get("passengers", 1))
     # budget = float(form_data.get("budget", 0))
 
@@ -203,7 +204,7 @@ def travel_form_handler(form_data):
         "origin": origin,
         "destination": destination,
         "departure_date": departure_date,
-        "return_date": return_date,
+        "arrival_date": arrival_date,
         "passengers": passengers,
         "flights": [
             {

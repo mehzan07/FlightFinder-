@@ -68,7 +68,7 @@ def travel_ui():
                 if date_from and date_to and date_from > date_to:
                     errors.append("Return date must be after departure date.")
             except ValueError:
-                errors.append("Invalid return date format.")
+                errors.append("Invalid arrival date format.")
 
         # Validate passengers
         try:

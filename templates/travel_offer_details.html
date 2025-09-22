@@ -38,24 +38,20 @@
     <div class="offer-box">
         <h2>Flight Offer Details</h2>
 
-        <p><strong>🏷️ Airline:</strong> {{ offer.airline if offer.airline else "Unknown" }}</p>
-        <p><strong>✈️ Flight Number:</strong> {{ offer.flight_number if offer.flight_number else "N/A" }}</p>
-        <p><strong>⏱️ Duration:</strong> {{ offer.duration if offer.duration else "N/A" }}</p>
+        <p><strong>🏷️ Airline:</strong> {{ offer.airline or "Unknown" }}</p>
+        <p><strong>✈️ Flight Number:</strong> {{ offer.flight_number or "N/A" }}</p>
+        <p><strong>⏱️ Duration:</strong> {{ offer.duration or "N/A" }}</p>
         <p><strong>🛑 Stops:</strong> {{ offer.stops if offer.stops is defined else "0" }}</p>
-        <p><strong>💺 Cabin Class:</strong> {{ offer.cabin_class if offer.cabin_class else "Economy" }}</p>
-        <p><strong>🏢 Vendor:</strong> {{ offer.vendor if offer.vendor else "Unknown" }}</p>
-        <p><strong>💰 Price:</strong> €{{ offer.price if offer.price else "N/A" }}</p>
-        <p><strong>📍 Origin:</strong> {{ offer.origin if offer.origin else "N/A" }}</p>
-        <p><strong>🎯 Destination:</strong> {{ offer.destination if offer.destination else "N/A" }}</p>
+        <p><strong>💺 Cabin Class:</strong> {{ offer.cabin_class or "Economy" }}</p>
+        <p><strong>🏢 Vendor:</strong> {{ offer.vendor or "Unknown" }}</p>
+        <p><strong>💰 Price:</strong> €{{ offer.price or "N/A" }}</p>
+        <p><strong>📍 Origin:</strong> {{ offer.origin or "N/A" }}</p>
+        <p><strong>🎯 Destination:</strong> {{ offer.destination or "N/A" }}</p>
 
-        {% if offer.depart %}
-            <p><strong>🛫 Departure Date:</strong> {{ offer.depart.strftime('%Y-%m-%d %H:%M') }}</p>
-        {% else %}
-            <p><strong>🛫 Departure Date:</strong> Not available</p>
-        {% endif %}
+        <p><strong>🛫 Departure Date:</strong> {{ offer.depart or "Not available" }}</p>
 
-        {% if offer.trip_type == 'round-trip' and offer.return %}
-            🛬 <strong>Return:</strong> {{ offer.return.strftime('%b %d, %Y %H:%M') }}<br>
+        {% if offer.trip_type == 'round-trip' %}
+            <p><strong>🛬 Arrival Date:</strong> {{ offer.arrival or "Not available" }}</p>
         {% endif %}
 
         {% if offer.link %}

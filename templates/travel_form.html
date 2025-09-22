@@ -61,11 +61,11 @@
                    value="{{ session.last_search.departure if session.last_search else form_data.date_from if form_data else '2025-10-10' }}">
         </div>
 
-        <div class="mb-3" id="returnDateGroup"
+        <div class="mb-3" id="arrivalDateGroup"
              style="{% if form_data and form_data.trip_type == 'one-way' %}display:none;{% endif %}">
             <label class="form-label" for="date_to">📅 Return Date</label>
             <input type="date" id="date_to" name="date_to" class="form-control"
-                   value="{{ session.last_search.return if session.last_search else form_data.date_to if form_data and form_data.trip_type == 'round-trip' else '2025-10-17' }}"
+                   value="{{ session.last_search.arrival if session.last_search else form_data.date_to if form_data and form_data.trip_type == 'round-trip' else '2025-10-17' }}"
                    {% if not form_data or form_data.trip_type == 'round-trip' %}required{% endif %}>
         </div>
 
@@ -101,7 +101,7 @@
                         <div class="card-body">
                             <h5 class="card-title">{{ flight.airline }}</h5>
                             <p class="card-text">
-                                {{ flight.depart }}{% if flight.return %} → {{ flight.return }}{% endif %}<br>
+                                {{ flight.depart }}{% if flight.arrival %} → {{ flight.arrival }}{% endif %}<br>
                                 Price: €{{ flight.price }}
                             </p>
                             {% if flight.link %}
@@ -137,7 +137,7 @@
         const dateFrom = document.getElementById("date_from");
         const dateTo = document.getElementById("date_to");
         const tripType = document.getElementById("trip_type");
-        const returnDateGroup = document.getElementById("returnDateGroup");
+        const arrivalDateGroup = document.getElementById("arrivalDateGroup");
 
         if (dateFrom && dateTo) {
             const today = new Date().toISOString().split("T")[0];
@@ -150,11 +150,11 @@
 
         const toggleReturnDate = () => {
             if (tripType.value === "one-way") {
-                returnDateGroup.style.display = "none";
+                arrivalDateGroup.style.display = "none";
                 dateTo.required = false;
                 dateTo.value = "";
             } else {
-                returnDateGroup.style.display = "block";
+                arrivalDateGroup.style.display = "block";
                 dateTo.required = true;
             }
         };

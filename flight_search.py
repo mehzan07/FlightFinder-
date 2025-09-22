@@ -139,7 +139,7 @@ def search_flights_api(origin_code, destination_code, date_from_str, date_to_str
             results_response = requests.get(results_url)
             print(f"🔗 results_response.status_code: {results_response.status_code}")
             # if DEBUG_MODE:
-            # print(f"📥 Results response: {results_response.text}")
+             #print(f"📥 Results response: {results_response.text}")
             if results_response.status_code == 200:
                 proposals_chunks = results_response.json()
                 for chunk in proposals_chunks:
@@ -244,7 +244,7 @@ def search_flights_mock(origin_code, destination_code, date_from_str, date_to_st
         flight_origin = flight.get("origin")
         flight_destination = flight.get("destination")
         departure_date = flight.get("departure").date() if flight.get("departure") else None
-        return_date = flight.get("return").date() if trip_type == "round-trip" and flight.get("return") else None
+        arrival_date = flight.get("arrival").date() if trip_type == "round-trip" and flight.get("arrival") else None
         flight_price = flight.get("price")
         deep_link = flight.get("deep_link")
 
@@ -252,7 +252,7 @@ def search_flights_mock(origin_code, destination_code, date_from_str, date_to_st
             continue
         if not departure_date or departure_date != date_from:
             continue
-        if date_to and (not return_date or return_date != date_to):
+        if date_to and (not arrival_date or arrival_date != date_to):
             continue
 
         if not deep_link or not isinstance(deep_link, str) or deep_link.strip() == "":
@@ -277,7 +277,7 @@ def search_flights_mock(origin_code, destination_code, date_from_str, date_to_st
             "cabin_class": flight.get("cabin_class", "Economy"),
             "price": flight_price,
             "departure": flight.get("departure"),
-            "return": flight.get("return") if trip_type == "round-trip" else None,
+            "arrival": flight.get("arrival") if trip_type == "round-trip" else None,
             "vendor": flight.get("vendor", "MockVendor"),
             "deep_link": deep_link,
             "trip_type": trip_type
