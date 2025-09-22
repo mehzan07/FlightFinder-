@@ -23,30 +23,37 @@
     {% endif %}
 
     <form method="POST" action="/travel-ui" class="card p-4 shadow-sm">
+            <!-- Origin City -->
         <div class="mb-3">
-            <label class="form-label" for="origin_city">📍 From (City)</label>
-            <input type="text" id="origin_city" name="origin_city" class="form-control" placeholder="e.g. Stockholm" required
-                   value="{{ form_data.origin_city if form_data else '' }}">
+        <label for="origin_city" class="form-label">From (City)</label>
+        <input type="text" class="form-control" id="origin_city" name="origin_city"
+                value="{{ form_data.origin_city if form_data else 'Stockholm' }}"
+                placeholder="Enter origin city" />
         </div>
 
+        <!-- Origin Code (Full Name + Code) -->
         <div class="mb-3">
-            <label class="form-label" for="origin_code">✈️ Select Origin Airport</label>
-            <input type="text" id="origin_code" name="origin_code" class="form-control" placeholder="e.g. ARN" required
-                   value="{{ form_data.origin_code if form_data else '' }}">
+        <label for="origin_code" class="form-label">Origin Airport</label>
+        <input type="text" class="form-control" id="origin_code" name="origin_code"
+                value="{{ form_data.origin_code if form_data else 'Stockholm Arlanda (ARN)' }}"
+                placeholder="e.g. Stockholm Arlanda (ARN)" />
         </div>
 
+        <!-- Destination City -->
         <div class="mb-3">
-            <label class="form-label" for="destination_city">🎯 To (City)</label>
-            <input type="text" id="destination_city" name="destination_city" class="form-control" placeholder="e.g. Tokyo" required
-                   value="{{ form_data.destination_city if form_data else '' }}">
+        <label for="destination_city" class="form-label">To (City)</label>
+        <input type="text" class="form-control" id="destination_city" name="destination_city"
+                value="{{ form_data.destination_city if form_data else 'London' }}"
+                placeholder="Enter destination city" />
         </div>
 
+        <!-- Destination Code (Full Name + Code) -->
         <div class="mb-3">
-            <label class="form-label" for="destination_code">🛬 Select Destination Airport</label>
-            <input type="text" id="destination_code" name="destination_code" class="form-control" placeholder="e.g. HND" required
-                   value="{{ form_data.destination_code if form_data else '' }}">
+        <label for="destination_code" class="form-label">Destination Airport</label>
+        <input type="text" class="form-control" id="destination_code" name="destination_code"
+                value="{{ form_data.destination_code if form_data else 'London Heathrow (LHR)' }}"
+                placeholder="e.g. London Heathrow (LHR)" />
         </div>
-
         <div class="mb-3">
             <label class="form-label" for="trip_type">🧭 Trip Type</label>
             <select id="trip_type" name="trip_type" class="form-select">
