@@ -63,7 +63,7 @@
 
         <div class="mb-3" id="arrivalDateGroup"
              style="{% if form_data and form_data.trip_type == 'one-way' %}display:none;{% endif %}">
-            <label class="form-label" for="date_to">📅 Return Date</label>
+            <label class="form-label" for="date_to">📅 Arrival Date</label>
             <input type="date" id="date_to" name="date_to" class="form-control"
                    value="{{ session.last_search.arrival if session.last_search else form_data.date_to if form_data and form_data.trip_type == 'round-trip' else '2025-10-17' }}"
                    {% if not form_data or form_data.trip_type == 'round-trip' %}required{% endif %}>
