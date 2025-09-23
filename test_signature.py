@@ -3,11 +3,7 @@
 # Calls your generate_signature() function 
 # Prints both the raw string and the resulting MD5 hash
 
-from dotenv import load_dotenv
-import os
-
-load_dotenv()
-API_TOKEN = os.getenv("API_TOKEN")
+from config import API_TOKEN
 
 
 from flight_search import generate_signature

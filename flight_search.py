@@ -9,23 +9,15 @@ import hashlib
 
 load_dotenv()
 
-AFFILIATE_MARKER = os.getenv("AFFILIATE_MARKER")
-print("🔑 API_TOKEN:", AFFILIATE_MARKER)
+from config import AFFILIATE_MARKER, API_TOKEN,HOST,USER_IP,USE_REAL_API, FEATURED_FLIGHT_LIMIT,DEBUG_MODE
 
-API_TOKEN = os.getenv("API_TOKEN")
-print("🔑 API_TOKEN:", API_TOKEN)
 
-HOST = os.getenv("HOST", "localhost")
-USER_IP = os.getenv("USER_IP", "127.0.0.1")
-USE_REAL_API = os.getenv("USE_REAL_API", "False").lower() == "true"
-DEBUG_MODE = os.getenv("DEBUG_MODE", "False").lower() == "true"
 
-def search_flights(origin_code, destination_code, date_from_str, date_to_str, trip_type, adults=1, children=0, infants=0, cabin_class="economy"):
+def search_flights(origin_code, destination_code, date_from_str, date_to_str, trip_type, adults=1, children=0,infants=0, cabin_class="economy", limit=None):
     if USE_REAL_API:
-        return search_flights_api(origin_code, destination_code, date_from_str, date_to_str,
-                                    trip_type, adults, children, infants, cabin_class)
+        return search_flights_api(origin_code, destination_code, date_from_str, date_to_str, trip_type, adults, children, infants, cabin_class,limit=limit)
     else:
-        return search_flights_mock(origin_code, destination_code, date_from_str, date_to_str, trip_type)
+        return search_flights_mock(origin_code, destination_code, date_from_str, date_to_str, trip_type,limit=limit)
 
 def map_cabin_class(cabin_class):
     return {
@@ -52,8 +44,7 @@ def generate_signature(token, marker, host, user_ip, locale, trip_class, passeng
     return hashlib.md5(raw_string.encode()).hexdigest()
 
 
-def search_flights_api(origin_code, destination_code, date_from_str, date_to_str=None,
-                       trip_type="round-trip", adults=1, children=0, infants=0, cabin_class="economy"):
+def search_flights_api(origin_code, destination_code, date_from_str, date_to_str=None, trip_type="round-trip", adults=1, children=0, infants=0, cabin_class="economy", limit=None):
 
     init_url = "https://api.travelpayouts.com/v1/flight_search"
 
@@ -115,8 +106,8 @@ def search_flights_api(origin_code, destination_code, date_from_str, date_to_str
             print(json.dumps(payload, indent=2))
 
         response = requests.post(init_url, json=payload, headers=headers)
-        if DEBUG_MODE:
-            print(f"📥 Raw response: {response.text}")
+       # if DEBUG_MODE:
+            #print(f"📥 Raw response: {response.text}")
         if response.status_code != 200:
             print(f"❌ API error: {response.status_code}")
             return []
@@ -139,7 +130,8 @@ def search_flights_api(origin_code, destination_code, date_from_str, date_to_str
             results_response = requests.get(results_url)
             print(f"🔗 results_response.status_code: {results_response.status_code}")
             # if DEBUG_MODE:
-             #print(f"📥 Results response: {results_response.text}")
+            print(f"📥 Results response: {results_response.text}")
+            print(f"📥 Results response json: {results_response.json}")    
             if results_response.status_code == 200:
                 proposals_chunks = results_response.json()
                 for chunk in proposals_chunks:
@@ -187,6 +179,7 @@ def search_flights_api(origin_code, destination_code, date_from_str, date_to_str
             destination = last_leg.get("arrival", "")
             duration = sum(f.get("duration", 0) for f in all_flights)
             stops = len(all_flights) - 1
+            
 
             if not booking_link or not departure or not price:
                 if DEBUG_MODE:
@@ -211,21 +204,27 @@ def search_flights_api(origin_code, destination_code, date_from_str, date_to_str
                 "cabin_class": cabin_class
             })
 
-            if len(filtered) >= 30:
-                break
+    # ✅ Sort by price ascending
+    filtered.sort(key=lambda x: x.get("price", float("inf")))
 
-    filtered.sort(key=lambda x: (
-        x["airline"] != "Airline not specified",
-        x["flight_number"] != "Not available",
-        x["depart"] != "Departure time not available",
-        x.get("price", float("inf"))
-    ), reverse=True)
+
+    # ✅ Slice top FEATURED_FLIGHT_LIMIT flights for featured display
+    limit = limit or FEATURED_FLIGHT_LIMIT
+    featured_flights = filtered[:limit]
+
+
 
     print(f"\n🎯 Total matching flights from API: {len(filtered)}")
-    return filtered
+    print(f"🌟 Featured (top {FEATURED_FLIGHT_LIMIT} cheapest):")
+    for flight in featured_flights:
+        print(f"\n  ✈️   {flight}") # show the whole info of flights
+
+    # ✅ Return both full and featured lists
+    # return filtered, featured_flights
+    return featured_flights
 
 # this function is only for demo
-def search_flights_mock(origin_code, destination_code, date_from_str, date_to_str, trip_type):
+def search_flights_mock(origin_code, destination_code, date_from_str, date_to_str, trip_type, limit=None):
     try:
         date_from = datetime.strptime(date_from_str, "%Y-%m-%d").date()
         date_to = datetime.strptime(date_to_str, "%Y-%m-%d").date() if date_to_str else None
@@ -283,12 +282,16 @@ def search_flights_mock(origin_code, destination_code, date_from_str, date_to_st
             "trip_type": trip_type
         })  
     print(f"\n🎯 Total matching flights: {len(filtered)}")
+    filtered.sort(key=lambda x: x.get("price", float("inf")))
+    featured_flights = filtered[:limit or FEATURED_FLIGHT_LIMIT]
 
     if skipped_flights:
             print(f"\n🚫 Total skipped flights due to invalid deep_link: {len(skipped_flights)}")
             for i, f in enumerate(skipped_flights, 1):
                 print(f"{i}. {f}")
                 
-    return filtered
+    print(f"\n🎯 Total featured_flights: {len(featured_flights)}")
+                
+    return featured_flights
 
 

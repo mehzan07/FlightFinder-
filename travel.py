@@ -8,10 +8,9 @@ from mock_data import AIRLINE_NAMES  # ✅ Added import
 from datetime import date, datetime
 from flask import request
 
-from dotenv import load_dotenv
-import os
-load_dotenv()
-AFFILIATE_MARKER = os.getenv("AFFILIATE_MARKER")
+
+
+from config import AFFILIATE_MARKER
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -23,7 +22,7 @@ def generate_affiliate_link(origin, destination, date_from, date_to, passengers)
     return f"{base_url}/{search_code}?adults={passengers}&utm_source={AFFILIATE_MARKER}"
 
 
-def travel_chatbot(user_input: str, trip_type: str = "round-trip") -> dict:
+def travel_chatbot(user_input: str, trip_type: str = "round-trip", limit=None) -> dict:
     info = extract_travel_entities(user_input)
     print("Extracted info:", info)
     logger.info(f"Extracted info: {info}")
@@ -111,8 +110,9 @@ def travel_chatbot(user_input: str, trip_type: str = "round-trip") -> dict:
     adults=adults,
     children=children,
     infants=infants,
-    cabin_class=cabin_class
-)
+    cabin_class=cabin_class,
+    limit=limit
+    )
 
     if not flights:
         return {

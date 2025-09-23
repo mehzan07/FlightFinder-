@@ -108,7 +108,8 @@ def flightfinder():
 
         return render_template("travel_results.html", flights=flights, info=info)
 
-    return render_template("travel_form.html", mode="chat")
+   # return render_template("travel_form.html", mode="chat")
+    return render_template("travel_form.html", mode="chat", form_data={})
 
 # === Travel Results & Confirmation ===
 @app.route("/results", methods=["POST"])

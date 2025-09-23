@@ -1,10 +1,8 @@
 from flask import Blueprint, render_template, request
 from travel import travel_chatbot
 from datetime import datetime
-import os
-from dotenv import load_dotenv
-load_dotenv()
-DEBUG_MODE = os.getenv("DEBUG_MODE", "False").lower() == "true"
+
+from config import  DEBUG_MODE,  FEATURED_FLIGHT_LIMIT
 
 offers_db = {}
 travel_bp = Blueprint("travel", __name__)
@@ -12,6 +10,11 @@ travel_bp = Blueprint("travel", __name__)
 @travel_bp.route("/travel-ui", methods=["GET", "POST"])
 def travel_ui():
     print("DEBUG_MODE is:", DEBUG_MODE)
+    if request.method == "POST":
+        limit = request.form.get("limit", FEATURED_FLIGHT_LIMIT, type=int)
+    else:
+        limit = request.args.get("limit", FEATURED_FLIGHT_LIMIT, type=int)
+
     if request.method == "POST":
         origin_city = request.form.get("origin_city", "").strip()
         origin_code = request.form.get("origin_code", "").strip()
@@ -95,7 +98,7 @@ def travel_ui():
         )
 
         try:
-            result = travel_chatbot(user_input, trip_type=trip_type)
+            result = travel_chatbot(user_input, trip_type=trip_type,limit=limit )
         except Exception as e:
             error_msg = f"⚠️ Something went wrong while processing your request: {str(e)}"
             return render_template("travel_form.html", errors=[error_msg], form_data=form_data)
