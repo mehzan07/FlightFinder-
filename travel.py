@@ -48,7 +48,7 @@ def travel_chatbot(user_input: str, trip_type: str = "round-trip", limit=None) -
         
     if trip_type != "one-way":
         if "date_to" not in info or not isinstance(info["date_to"], (datetime, date)):
-            missing_fields.append("arrival date")
+            missing_fields.append("return date")
 
     if missing_fields:
         return {
@@ -62,7 +62,7 @@ def travel_chatbot(user_input: str, trip_type: str = "round-trip", limit=None) -
     if trip_type != "one-way" and info["date_from"] > info["date_to"]:
         return {
             "flights": [],
-            "message": "⏳ Your arrival date must be after your departure date.",
+            "message": "⏳ Your return date must be after your departure date.",
             "summary": None,
             "affiliate_link": None,
             "trip_info": {}
@@ -138,7 +138,7 @@ def travel_chatbot(user_input: str, trip_type: str = "round-trip", limit=None) -
             "id": flight["id"],
             "price": flight.get("price"),
             "depart": flight.get("depart"),
-            "arrival": flight.get("arrival"),
+            "return": flight.get("return"),
             "airline": airline_name,
             "flight_number": flight.get("flight_number", "N/A"),
             "duration": flight.get("duration", "N/A"),
@@ -164,7 +164,7 @@ def travel_chatbot(user_input: str, trip_type: str = "round-trip", limit=None) -
     "origin": info["origin_code"],
     "destination": info["destination_code"],
     "departure_date": info["date_from"].strftime('%Y-%m-%d') if info.get("date_from") else "",
-    "arrival_date": info["date_to"].strftime('%Y-%m-%d') if info.get("date_to") else "",
+    "return_date": info["date_to"].strftime('%Y-%m-%d') if info.get("date_to") else "",
     "passengers": passengers,
     "trip_type": info.get("trip_type", "round-trip")  # fallback if missing
 }
@@ -195,16 +195,16 @@ def travel_form_handler(form_data):
     origin = form_data.get("origin", "").strip()
     destination = form_data.get("destination", "").strip()
     departure_date = form_data.get("departure_date", "")
-    arrival_date = form_data.get("arrival_date", "")
+    return_date = form_data.get("return_date", "")
     passengers = int(form_data.get("passengers", 1))
-    # budget = float(form_data.get("budget", 0))
+    # budget = float(form_data.get("budget", 0))s
 
     # Mock result — replace with real API call or logic
     results = {
         "origin": origin,
         "destination": destination,
         "departure_date": departure_date,
-        "arrival_date": arrival_date,
+        "return_date": return_date,
         "passengers": passengers,
         "flights": [
             {

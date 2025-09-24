@@ -15,13 +15,13 @@
   display: none !important;
 }
 
-/* 🧭 Hide arrival date field for one-way trips */
-#arrivalDateGroup.hidden {
+/* 🧭 Hide return date field for one-way trips */
+#returnDateGroup.hidden {
   display: none !important;
 }
 
 /* ✨ Optional: Smooth transition for toggling visibility */
-#arrivalDateGroup {
+#returnDateGroup {
   transition: all 0.3s ease-in-out;
 }
 

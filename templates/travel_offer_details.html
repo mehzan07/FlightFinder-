@@ -47,11 +47,9 @@
         <p><strong>💰 Price:</strong> €{{ offer.price or "N/A" }}</p>
         <p><strong>📍 Origin:</strong> {{ offer.origin or "N/A" }}</p>
         <p><strong>🎯 Destination:</strong> {{ offer.destination or "N/A" }}</p>
-
-        <p><strong>🛫 Departure Date:</strong> {{ offer.depart or "Not available" }}</p>
-
+        <p><strong>🛫 Depart:</strong> {{ offer.depart_formatted or "Not available" }}</p>
         {% if offer.trip_type == 'round-trip' %}
-            <p><strong>🛬 Arrival Date:</strong> {{ offer.arrival or "Not available" }}</p>
+            <p><strong>🛬 Return:</strong> {{ offer.return_formatted or "Not available" }}</p>
         {% endif %}
 
         {% if offer.link %}

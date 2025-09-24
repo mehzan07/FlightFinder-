@@ -21,9 +21,9 @@
           <p>
             📅 Departure: <strong>{{ trip_info.departure_date }}</strong>
           </p>
-          {% if trip_info.arrival_date %}
+          {% if trip_info.return_date %}
             <p>
-              📅 Return: <strong>{{ trip_info.arrival_date }}</strong>
+              📅 Return: <strong>{{ trip_info.return_date }}</strong>
             </p>
           {% endif %}
           <p>
@@ -105,8 +105,10 @@
                     ⏱️ <strong>Duration:</strong> {{ flight.duration }} minutes<br />
                     🛑 <strong>Stops:</strong> {{ flight.stops }}<br />
                     💺 <strong>Cabin Class:</strong> {{ flight.cabin_class }}<br />
-                    🛫 <strong>Departure:</strong> {{ flight.depart_formatted }}<br />
-                    🛬 <strong>Return:</strong> {{ flight.arrival_formatted }}<br />
+                    📍 <strong>Origin:</strong> {{ flight.origin }}<br />
+                    🎯 <strong>Destination:</strong> {{ flight.destination }}<br />
+                    🛫 <strong>Depart:</strong> {{ flight.depart_formatted }}<br />
+                    🛬 <strong>Return:</strong> {{ flight.return_formatted }}<br />
                     💰 <strong>Price:</strong> €{{ flight.price }}<br />
                     🏢 <strong>Vendor:</strong> {{ flight.vendor }}
                   </p>

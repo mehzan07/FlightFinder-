@@ -65,7 +65,7 @@ def travel_ui():
                 if date_from and date_to and date_from > date_to:
                     errors.append("Return date must be after departure date.")
             except ValueError:
-                errors.append("Invalid arrival date format.")
+                errors.append("Invalid return date format.")
 
         try:
             passengers = int(passengers_raw)
@@ -103,7 +103,7 @@ def travel_ui():
             prepared_flight["origin"] = trip_info.get("origin", origin_code)
             prepared_flight["destination"] = trip_info.get("destination", destination_code)
             prepared_flight["depart_formatted"] = format_datetime(prepared_flight.get("depart", ""))
-            prepared_flight["arrival_formatted"] = format_datetime(prepared_flight.get("arrival", ""))
+            prepared_flight["return_formatted"] = format_datetime(prepared_flight.get("return", ""))
             offers_db[prepared_flight["id"]] = prepared_flight
 
         DISPLAY_LIMIT = 3
