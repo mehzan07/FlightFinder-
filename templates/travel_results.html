@@ -1,146 +1,149 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>Flight Results</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-</head>
-<body class="bg-light">
-<div class="container py-5">
-    <header class="mb-4 text-center">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+  </head>
+  <body class="bg-light">
+    <div class="container py-5">
+      <header class="mb-4 text-center">
         <h2>✈️ Your Flight Options</h2>
-    </header>
+      </header>
 
-    {% if trip_info %}
-    <section class="alert alert-info text-center">
-        <p>✈️ Trip from <strong>{{ trip_info.origin }}</strong> to <strong>{{ trip_info.destination }}</strong></p>
-        <p>📅 Departure: <strong>{{ trip_info.departure_date }}</strong></p>
-        {% if trip_info.arrival_date %}
-        <p>📅 Return: <strong>{{ trip_info.arrival_date }}</strong></p>
-        {% endif %}
-        <p>👥 Passengers: <strong>{{ trip_info.passengers }}</strong></p>
-        <p>💺 Class: <strong>{{ trip_info.cabin_class }}</strong></p>
-    </section>
-    {% endif %}
+      {% if trip_info %}
+        <section class="alert alert-info text-center">
+          <p>
+            ✈️ Trip from <strong>{{ trip_info.origin }}</strong> to <strong>{{ trip_info.destination }}</strong>
+          </p>
+          <p>
+            📅 Departure: <strong>{{ trip_info.departure_date }}</strong>
+          </p>
+          {% if trip_info.arrival_date %}
+            <p>
+              📅 Return: <strong>{{ trip_info.arrival_date }}</strong>
+            </p>
+          {% endif %}
+          <p>
+            👥 Passengers: <strong>{{ trip_info.passengers }}</strong>
+          </p>
+          <p>
+            💺 Class: <strong>{{ trip_info.cabin_class }}</strong>
+          </p>
+        </section>
+      {% endif %}
 
-    {% if summary %}
-    <section class="alert alert-info text-center">{{ summary }}</section>
-    {% endif %}
-    {% if message %}
-    <section class="alert alert-warning text-center">{{ message }}</section>
-    {% endif %}
+      {% if summary %}
+        <section class="alert alert-info text-center">{{ summary }}</section>
+      {% endif %}
+      {% if message %}
+        <section class="alert alert-warning text-center">{{ message }}</section>
+      {% endif %}
 
-    {% if flights %}
-    <section class="mb-4">
-        <div class="card p-3 shadow-sm">
+      {% if flights %}
+        <section class="mb-4">
+          <div class="card p-3 shadow-sm">
             <h5>🔍 Filter Your Results</h5>
             <div class="row g-3 align-items-end">
-                <div class="col-md-3">
-                    <label for="priceRange" class="form-label">Max Price (€)</label>
-                    <input type="range" class="form-range" id="priceRange" min="100" max="1000" step="50" value="1000">
-                    <span id="priceValue">€1000</span>
-                </div>
-                <div class="col-md-3">
-                    <label for="airlineFilter" class="form-label">Airline</label>
-                    <select class="form-select" id="airlineFilter">
-                        <option value="">All</option>
-                        {% for flight in flights %}
-                            {% if flight.airline %}
-                                <option value="{{ flight.airline }}">{{ flight.airline }}</option>
-                            {% endif %}
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label for="stopsFilter" class="form-label">Stops</label>
-                    <select class="form-select" id="stopsFilter">
-                        <option value="">All</option>
-                        <option value="0">Non-stop</option>
-                        <option value="1">1 Stop</option>
-                        <option value="2">2+ Stops</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label for="sortOptions" class="form-label">Sort by</label>
-                    <select class="form-select" id="sortOptions">
-                        <option value="">None</option>
-                        <option value="price">Price</option>
-                        <option value="duration">Duration</option>
-                        <option value="depart">Departure Time</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <h4 class="mt-4">💼 View Offers</h4>
-    <p class="text-muted">Showing {{ flights|length }} flight offers</p>
-
-    <section class="row row-cols-1 row-cols-md-3 g-4">
-        {% for flight in flights %}
-        <article class="col flight-card {% if loop.index0 >= 3 %}d-none extra-offer{% endif %}"
-                data-price="{{ flight.price }}"
-                data-airline="{{ flight.airline }}"
-                data-stops="{{ flight.stops }}"
-                data-duration="{{ flight.duration }}"
-                data-depart="{{ flight.depart }}">
-            <div class="card h-100 shadow-sm {% if loop.index0 == 0 %}border-success{% endif %}">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        {{ flight.airline }}
-                        {% if loop.index0 == 0 %}
-                        <span class="badge bg-success ms-2">Best Price</span>
-                        {% endif %}
-                    </h5>
-                    <p class="card-text">
-                        🏷️ <strong>Airline:</strong> {{ flight.airline }}<br>
-                        ✈️ <strong>Flight Number:</strong> {{ flight.flight_number }}<br>
-                        ⏱️ <strong>Duration:</strong> {{ flight.duration }} minutes<br>
-                        🛑 <strong>Stops:</strong> {{ flight.stops }}<br>
-                        💺 <strong>Cabin Class:</strong> {{ flight.cabin_class }}<br>
-                        🛫 <strong>Depart:</strong> {{ flight.depart if flight.depart else "Not available" }}<br>
-                        🛬 <strong>Arrive:</strong> {{ flight.arrival if flight.arrival else "Not available" }}<br>
-                        🌍 <strong>Route:</strong> {{ flight.origin }} → {{ flight.destination }}<br>
-                        💰 <strong>Price:</strong> €{{ flight.price }}<br>
-                        🏢 <strong>Vendor:</strong> {{ flight.vendor }}
-                    </p>
-
-                    {% if flight.link %}
-                    <a href="{{ flight.link }}" class="btn btn-outline-primary mt-2" target="_blank">Book Now</a>
-                    {% else %}
-                    <span class="text-muted">No booking link available</span>
+              <div class="col-md-3">
+                <label for="priceRange" class="form-label">Max Price (€)</label>
+                <input type="range" class="form-range" id="priceRange" min="100" max="1000" step="50" value="1000" />
+                <span id="priceValue">€1000</span>
+              </div>
+              <div class="col-md-3">
+                <label for="airlineFilter" class="form-label">Airline</label>
+                <select class="form-select" id="airlineFilter">
+                  <option value="">All</option>
+                  {% for flight in flights %}
+                    {% if flight.airline %}
+                      <option value="{{ flight.airline }}">{{ flight.airline }}</option>
                     {% endif %}
-
-                    <a href="{{ url_for('travel.view_offer', offer_id=flight.id) }}" class="btn btn-outline-info mt-2">View Details</a>
-                </div>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-md-3">
+                <label for="stopsFilter" class="form-label">Stops</label>
+                <select class="form-select" id="stopsFilter">
+                  <option value="">All</option>
+                  <option value="0">Non-stop</option>
+                  <option value="1">1 Stop</option>
+                  <option value="2">2+ Stops</option>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <label for="sortOptions" class="form-label">Sort by</label>
+                <select class="form-select" id="sortOptions">
+                  <option value="">None</option>
+                  <option value="price">Price</option>
+                  <option value="duration">Duration</option>
+                  <option value="depart">Departure Time</option>
+                </select>
+              </div>
             </div>
-        </article>
-        {% endfor %}
-    </section>
+          </div>
+        </section>
 
-    {% if show_more %}
-    <div class="text-center mt-4">
-        <button id="showAllBtn" class="btn btn-primary">Show More Offers</button>
+        <h4 class="mt-4">💼 View Offers</h4>
+        <p class="text-muted">Showing {{ flights|length }} flight offers</p>
+
+        <section class="row row-cols-1 row-cols-md-3 g-4">
+          {% for flight in flights %}
+            <article class="col flight-card {% if loop.index0 >= 3 %}d-none extra-offer{% endif %}" data-price="{{ flight.price }}" data-airline="{{ flight.airline }}" data-stops="{{ flight.stops }}" data-duration="{{ flight.duration }}" data-depart="{{ flight.depart }}">
+              <div class="card h-100 shadow-sm {% if loop.index0 == 0 %}border-success{% endif %}">
+                <div class="card-body">
+                  <h5 class="card-title">
+                    {{ flight.airline }}
+                    {% if loop.index0 == 0 %}
+                      <span class="badge bg-success ms-2">Best Price</span>
+                    {% endif %}
+                  </h5>
+                  <p class="card-text">
+                    🏷️ <strong>Airline:</strong> {{ flight.airline }}<br />
+                    ✈️ <strong>Flight Number:</strong> {{ flight.flight_number }}<br />
+                    ⏱️ <strong>Duration:</strong> {{ flight.duration }} minutes<br />
+                    🛑 <strong>Stops:</strong> {{ flight.stops }}<br />
+                    💺 <strong>Cabin Class:</strong> {{ flight.cabin_class }}<br />
+                    🛫 <strong>Departure:</strong> {{ flight.depart_formatted }}<br />
+                    🛬 <strong>Return:</strong> {{ flight.arrival_formatted }}<br />
+                    💰 <strong>Price:</strong> €{{ flight.price }}<br />
+                    🏢 <strong>Vendor:</strong> {{ flight.vendor }}
+                  </p>
+
+                  {% if flight.link %}
+                    <a href="{{ flight.link }}" class="btn btn-outline-primary mt-2" target="_blank">Book Now</a>
+                  {% else %}
+                    <span class="text-muted">No booking link available</span>
+                  {% endif %}
+
+                  <a href="{{ url_for('travel.view_offer', offer_id=flight.id) }}" class="btn btn-outline-info mt-2">View Details</a>
+                </div>
+              </div>
+            </article>
+          {% endfor %}
+        </section>
+
+        {% if show_more %}
+          <div class="text-center mt-4">
+            <button id="showAllBtn" class="btn btn-primary">Show More Offers</button>
+          </div>
+        {% endif %}
+      {% else %}
+        <div class="no-results text-center mt-5">
+          <p class="fs-5 text-muted">😕 No flights found. Try changing your dates or destination.</p>
+        </div>
+      {% endif %}
+
+      {% if debug_payload %}
+        <details class="mt-5">
+          <summary>🔧 Debug Info</summary>
+          <pre>{{ debug_payload|tojson(indent=2) }}</pre>
+        </details>
+      {% endif %}
     </div>
-    {% endif %}
 
-    {% else %}
-    <div class="no-results text-center mt-5">
-        <p class="fs-5 text-muted">😕 No flights found. Try changing your dates or destination.</p>
-    </div>
-    {% endif %}
-
-    {% if debug_payload %}
-    <details class="mt-5">
-        <summary>🔧 Debug Info</summary>
-        <pre>{{ debug_payload | tojson(indent=2) }}</pre>
-    </details>
-    {% endif %}
-</div>
-
-<script>
+    <script>
 document.addEventListener("DOMContentLoaded", function () {
     const priceRange = document.getElementById("priceRange");
     const airlineFilter = document.getElementById("airlineFilter");
@@ -211,6 +214,5 @@ document.addEventListener("DOMContentLoaded", function () {
 {% endif %}
 });
 </script>
-</body>
+  </body>
 </html>
-   

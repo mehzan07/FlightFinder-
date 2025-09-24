@@ -13,6 +13,7 @@ from config import AFFILIATE_MARKER, API_TOKEN,HOST,USER_IP,USE_REAL_API, FEATUR
 
 
 
+
 def search_flights(origin_code, destination_code, date_from_str, date_to_str, trip_type, adults=1, children=0,infants=0, cabin_class="economy", limit=None):
     if USE_REAL_API:
         return search_flights_api(origin_code, destination_code, date_from_str, date_to_str, trip_type, adults, children, infants, cabin_class,limit=limit)
