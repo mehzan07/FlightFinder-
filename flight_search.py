@@ -32,17 +32,29 @@ def generate_flight_id(link, airline, departure):
     return hashlib.md5(raw.encode()).hexdigest()
 
 def generate_signature(token, marker, host, user_ip, locale, trip_class, passengers, segments):
-    # Build raw string in exact order required by Travelpayouts
-    raw_string = (
-        f"{token}:{host}:{locale}:{marker}:"
-        f"{passengers['adults']}:{passengers['children']}:{passengers['infants']}:"
-        f"{segments[0]['date']}:{segments[0]['destination']}:{segments[0]['origin']}:"
-        f"{segments[1]['date']}:{segments[1]['destination']}:{segments[1]['origin']}:"
-        f"{trip_class}:{user_ip}"
-    )
+    outbound = segments[0]
 
-    print("🔍 Raw string used for signature:", raw_string)
-    return hashlib.md5(raw_string.encode()).hexdigest()
+    if len(segments) == 1:
+        # One-way format
+        raw_string = (
+            f"{token}:{host}:{locale}:{marker}:"
+            f"{passengers['adults']}:{passengers['children']}:{passengers['infants']}:"
+            f"{outbound['date']}:{outbound['destination']}:{outbound['origin']}:"
+            f"{trip_class}:{user_ip}"
+        )
+    else:
+        # Round-trip format
+        return_seg = segments[1]
+        raw_string = (
+            f"{token}:{host}:{locale}:{marker}:"
+            f"{passengers['adults']}:{passengers['children']}:{passengers['infants']}:"
+            f"{outbound['date']}:{outbound['destination']}:{outbound['origin']}:"
+            f"{return_seg['date']}:{return_seg['destination']}:{return_seg['origin']}:"
+            f"{trip_class}:{user_ip}"
+        )
+    print("🔐 Raw signature string:", raw_string)
+    # Hash it
+    return hashlib.md5(raw_string.encode("utf-8")).hexdigest()
 
 
 def search_flights_api(origin_code, destination_code, date_from_str, date_to_str=None, trip_type="round-trip", adults=1, children=0, infants=0, cabin_class="economy", limit=None):
@@ -60,6 +72,9 @@ def search_flights_api(origin_code, destination_code, date_from_str, date_to_str
             "destination": origin_code,
             "origin": destination_code
         })
+        print(f"🧭 Trip type: {trip_type}")
+        print(f"🧳 Segments sent: {json.dumps(segments, indent=2)}")
+
 
     passengers = {
         "adults": int(adults),
@@ -170,7 +185,8 @@ def search_flights_api(origin_code, destination_code, date_from_str, date_to_str
                 continue
 
             first_leg = all_flights[0]
-            last_leg = all_flights[-1]
+            last_leg = all_flights[-1] if len(all_flights) > 1 else first_leg
+
 
             airline = first_leg.get("marketing_carrier", "Unknown")
             flight_number = first_leg.get("number", "Not available")

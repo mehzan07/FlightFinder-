@@ -50,6 +50,8 @@
         <p><strong>🛫 Depart:</strong> {{ offer.depart_formatted or "Not available" }}</p>
         {% if offer.trip_type == 'round-trip' %}
             <p><strong>🛬 Return:</strong> {{ offer.return_formatted or "Not available" }}</p>
+        {% else %}
+            <p><strong>🛬 Arrives:</strong> {{ offer.return_formatted or "Not available" }}</p>
         {% endif %}
 
         {% if offer.link %}

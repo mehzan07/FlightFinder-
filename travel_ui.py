@@ -34,6 +34,9 @@ def travel_ui():
         trip_type = request.form.get("trip_type", "round-trip").strip()
 
         errors = []
+        if trip_type != "one-way" and not date_to_raw:
+            errors.append("Return date is required for round-trip.")
+
         form_data = request.form
 
         date_from = date_to = None

@@ -99,19 +99,24 @@
                       <span class="badge bg-success ms-2">Best Price</span>
                     {% endif %}
                   </h5>
-                  <p class="card-text">
-                    🏷️ <strong>Airline:</strong> {{ flight.airline }}<br />
-                    ✈️ <strong>Flight Number:</strong> {{ flight.flight_number }}<br />
-                    ⏱️ <strong>Duration:</strong> {{ flight.duration }} minutes<br />
-                    🛑 <strong>Stops:</strong> {{ flight.stops }}<br />
-                    💺 <strong>Cabin Class:</strong> {{ flight.cabin_class }}<br />
-                    📍 <strong>Origin:</strong> {{ flight.origin }}<br />
-                    🎯 <strong>Destination:</strong> {{ flight.destination }}<br />
-                    🛫 <strong>Depart:</strong> {{ flight.depart_formatted }}<br />
-                    🛬 <strong>Return:</strong> {{ flight.return_formatted }}<br />
-                    💰 <strong>Price:</strong> €{{ flight.price }}<br />
-                    🏢 <strong>Vendor:</strong> {{ flight.vendor }}
-                  </p>
+                  </h5>
+              <p class="card-text">
+                  🏷️ <strong>Airline:</strong> {{ flight.airline }}<br />
+                  ✈️ <strong>Flight Number:</strong> {{ flight.flight_number }}<br />
+                  ⏱️ <strong>Duration:</strong> {{ flight.duration }} minutes<br />
+                  🛑 <strong>Stops:</strong> {{ flight.stops }}<br />
+                  💺 <strong>Cabin Class:</strong> {{ flight.cabin_class }}<br />
+                  📍 <strong>Origin:</strong> {{ flight.origin }}<br />
+                  🎯 <strong>Destination:</strong> {{ flight.destination }}<br />
+                  🛫 <strong>Depart:</strong> {{ flight.depart }}<br />
+                  {% if trip_type == 'one-way' %}
+                      🛬 <strong>Arrives:</strong> {{ flight.return }}<br />
+                  {% else %}
+                      🛬 <strong>Return:</strong> {{ flight.return }}<br />
+                  {% endif %}
+                  💰 <strong>Price:</strong> €{{ flight.price }}<br />
+                  🏢 <strong>Vendor:</strong> {{ flight.vendor }}
+              </p>
 
                   {% if flight.link %}
                     <a href="{{ flight.link }}" class="btn btn-outline-primary mt-2" target="_blank">Book Now</a>
