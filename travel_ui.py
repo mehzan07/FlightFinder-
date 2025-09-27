@@ -1,7 +1,12 @@
-from flask import Blueprint, render_template, request
+from flask import Blueprint, render_template, request, jsonify
 from travel import travel_chatbot
 from datetime import datetime
 from config import DEBUG_MODE, FEATURED_FLIGHT_LIMIT
+import json
+
+from config import get_logger
+logger = get_logger(__name__)
+
 
 offers_db = {}
 travel_bp = Blueprint("travel", __name__)
@@ -15,8 +20,8 @@ def format_datetime(dt_str):
 
 @travel_bp.route("/travel-ui", methods=["GET", "POST"])
 def travel_ui():
-    print("🛬 travel_ui route hit")
-    print("Request method:", request.method)
+    logger.info("travel_ui route hit")
+    logger.debug(f"Request method: {request.method}")
     print("DEBUG_MODE is:", DEBUG_MODE)
 
     if request.method == "POST":
@@ -32,6 +37,7 @@ def travel_ui():
         passengers_raw = request.form.get("passengers", "1").strip()
         cabin_class = request.form.get("cabin_class", "").strip()
         trip_type = request.form.get("trip_type", "round-trip").strip()
+        direct_only = request.form.get("direct_only") == "on"
 
         errors = []
         if trip_type != "one-way" and not date_to_raw:
@@ -43,11 +49,11 @@ def travel_ui():
         if not origin_code:
             errors.append("Origin airport is required.")
             if DEBUG_MODE:
-                print("🔍 Origin airport is required.")
+                print("⚠️ Origin airport is required.")
         if not destination_code:
             errors.append("Destination airport is required.")
             if DEBUG_MODE:
-                print("🔍 Destination airport is required.")
+                print("⚠️  Destination airport is required.")
         if not date_from_raw:
             errors.append("Departure date is required.")
         if trip_type != "one-way" and not date_to_raw:
@@ -60,7 +66,7 @@ def travel_ui():
         except ValueError:
             errors.append("Invalid departure date format.")
             if DEBUG_MODE:
-                print("🔍date_from: Invalid departure date format.")
+                print("⚠️  date_from: Invalid departure date format.")
 
         if trip_type != "one-way" and date_to_raw:
             try:
@@ -69,6 +75,9 @@ def travel_ui():
                     errors.append("Return date must be after departure date.")
             except ValueError:
                 errors.append("Invalid return date format.")
+                
+                form_data = request.form.copy()
+                form_data["direct_only"] = direct_only
 
         try:
             passengers = int(passengers_raw)
@@ -93,9 +102,9 @@ def travel_ui():
             )
 
         try:
-            result = travel_chatbot(user_input, trip_type=trip_type, limit=limit)
+            result = travel_chatbot( user_input,trip_type=trip_type, limit=limit, direct_only=direct_only)
         except Exception as e:
-            error_msg = f"⚠️ Something went wrong while processing your request: {str(e)}"
+            error_msg = f"WARNING: Something went wrong while processing your request: {str(e)}"
             return render_template("travel_form.html", errors=[error_msg], form_data=form_data)
 
         offers_db.clear()
@@ -125,7 +134,8 @@ def travel_ui():
             affiliate_link=result.get("affiliate_link"),
             trip_info=trip_info,
             show_more=show_more,
-            debug_payload=result if debug_mode else None
+            debug_payload=result if debug_mode else None,
+            direct_only=direct_only
         )
 
     return render_template("travel_form.html")
@@ -134,6 +144,27 @@ def travel_ui():
 def view_offer(offer_id):
     offer = offers_db.get(offer_id)
     if offer is None:
-        error_msg = f"⚠️ No offer found for ID: {offer_id}"
+        error_msg = f" Warning No offer found for ID: {offer_id}"
         return render_template("travel_form.html", errors=[error_msg])
     return render_template("travel_offer_details.html", offer=offer)
+
+
+@travel_bp.route("/autocomplete-airports")
+def autocomplete_airports():
+    query = request.args.get("query", "").strip().lower()
+
+    with open("airports.json", "r", encoding="utf-8") as f:
+        airports = json.load(f)
+
+    matches = [a for a in airports if
+        query in a["city"].lower() or
+        query in a["name"].lower() or
+        a["iata"].lower().startswith(query)
+    ]
+
+    results = [{
+        "value": f'{a["city"]} ({a["iata"]})',
+        "label": f'{a["name"]} â€" {a["city"]} ({a["iata"]})'
+    } for a in matches]
+
+    return jsonify(results)

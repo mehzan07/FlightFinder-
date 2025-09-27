@@ -1,24 +1,26 @@
 from datetime import datetime
 import requests
-import os
-from dotenv import load_dotenv
+#import os
+#from dotenv import load_dotenv
 from mock_data import mock_kiwi_response
 import time
 import json
 import hashlib
 
-load_dotenv()
+#load_dotenv()
+from config import get_logger
+logger = get_logger(__name__)
 
 from config import AFFILIATE_MARKER, API_TOKEN,HOST,USER_IP,USE_REAL_API, FEATURED_FLIGHT_LIMIT,DEBUG_MODE
 
 
 
 
-def search_flights(origin_code, destination_code, date_from_str, date_to_str, trip_type, adults=1, children=0,infants=0, cabin_class="economy", limit=None):
+def search_flights(origin_code, destination_code, date_from_str, date_to_str, trip_type, adults=1, children=0,infants=0, cabin_class="economy", limit=None, direct_only=False):
     if USE_REAL_API:
-        return search_flights_api(origin_code, destination_code, date_from_str, date_to_str, trip_type, adults, children, infants, cabin_class,limit=limit)
+        return search_flights_api(origin_code, destination_code, date_from_str, date_to_str, trip_type, adults, children, infants, cabin_class,limit=limit, direct_only=direct_only)
     else:
-        return search_flights_mock(origin_code, destination_code, date_from_str, date_to_str, trip_type,limit=limit)
+        return search_flights_mock(origin_code, destination_code, date_from_str, date_to_str, trip_type,limit=limit, direct_only=direct_only)
 
 def map_cabin_class(cabin_class):
     return {
@@ -57,7 +59,7 @@ def generate_signature(token, marker, host, user_ip, locale, trip_class, passeng
     return hashlib.md5(raw_string.encode("utf-8")).hexdigest()
 
 
-def search_flights_api(origin_code, destination_code, date_from_str, date_to_str=None, trip_type="round-trip", adults=1, children=0, infants=0, cabin_class="economy", limit=None):
+def search_flights_api(origin_code, destination_code, date_from_str, date_to_str=None, trip_type="round-trip", adults=1, children=0, infants=0, cabin_class="economy", limit=None, direct_only=False):
 
     init_url = "https://api.travelpayouts.com/v1/flight_search"
 
@@ -123,7 +125,7 @@ def search_flights_api(origin_code, destination_code, date_from_str, date_to_str
 
         response = requests.post(init_url, json=payload, headers=headers)
        # if DEBUG_MODE:
-            #print(f"📥 Raw response: {response.text}")
+            # print(f"📥 Raw response: {response.text}")
         if response.status_code != 200:
             print(f"❌ API error: {response.status_code}")
             return []
@@ -137,7 +139,7 @@ def search_flights_api(origin_code, destination_code, date_from_str, date_to_str
         return []
 
     results_url = f"https://api.travelpayouts.com/v1/flight_search_results?uuid={search_id}"
-    print(f"🔄 Polling results from: {results_url}")
+    print(f"📄 Polling results from: {results_url}")
 
     raw_proposals = []
     for attempt in range(5):
@@ -146,8 +148,8 @@ def search_flights_api(origin_code, destination_code, date_from_str, date_to_str
             results_response = requests.get(results_url)
             print(f"🔗 results_response.status_code: {results_response.status_code}")
             # if DEBUG_MODE:
-            print(f"📥 Results response: {results_response.text}")
-            print(f"📥 Results response json: {results_response.json}")    
+                #print(f"📥 Results response: {results_response.text}")
+                #print(f"📥 Results response json: {results_response.json}")    
             if results_response.status_code == 200:
                 proposals_chunks = results_response.json()
                 for chunk in proposals_chunks:
@@ -220,8 +222,18 @@ def search_flights_api(origin_code, destination_code, date_from_str, date_to_str
                 "trip_type": trip_type,
                 "cabin_class": cabin_class
             })
+    # ✅ Filter direct flights if requested
+    if direct_only:
+        filtered = [f for f in filtered if f.get("stops", 0) == 0]
+        #print(f"Filtered down to {len(filtered)} direct flights")
+        
+    #✅ Early exit if no flights
+    if not filtered:
+        print("\n⚠️ No flights matched the criteria.")
+        return []
 
     # ✅ Sort by price ascending
+   
     filtered.sort(key=lambda x: x.get("price", float("inf")))
 
 
@@ -229,19 +241,16 @@ def search_flights_api(origin_code, destination_code, date_from_str, date_to_str
     limit = limit or FEATURED_FLIGHT_LIMIT
     featured_flights = filtered[:limit]
 
-
-
     print(f"\n🎯 Total matching flights from API: {len(filtered)}")
     print(f"🌟 Featured (top {FEATURED_FLIGHT_LIMIT} cheapest):")
     for flight in featured_flights:
         print(f"\n  ✈️   {flight}") # show the whole info of flights
 
     # ✅ Return both full and featured lists
-    # return filtered, featured_flights
     return featured_flights
 
 # this function is only for demo
-def search_flights_mock(origin_code, destination_code, date_from_str, date_to_str, trip_type, limit=None):
+def search_flights_mock(origin_code, destination_code, date_from_str, date_to_str, trip_type, limit=None, only_direct=False):
     try:
         date_from = datetime.strptime(date_from_str, "%Y-%m-%d").date()
         date_to = datetime.strptime(date_to_str, "%Y-%m-%d").date() if date_to_str else None
@@ -310,5 +319,3 @@ def search_flights_mock(origin_code, destination_code, date_from_str, date_to_st
     print(f"\n🎯 Total featured_flights: {len(featured_flights)}")
                 
     return featured_flights
-
-

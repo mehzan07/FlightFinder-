@@ -4,6 +4,8 @@
 # Prints both the raw string and the resulting MD5 hash
 
 from config import API_TOKEN
+from config import get_logger
+logger = get_logger(__name__)
 
 
 from flight_search import generate_signature

@@ -1,4 +1,6 @@
 from datetime import datetime, timedelta
+from config import get_logger
+logger = get_logger(__name__)
 
 # ✅ Airline code-to-name mapping
 AIRLINE_NAMES = {

@@ -1,6 +1,5 @@
 # travel.py — core travel chatbot logic and form handler
 
-import logging
 from utils import extract_travel_entities
 from flight_search import search_flights
 from iata_codes import city_to_iata
@@ -9,11 +8,10 @@ from datetime import date, datetime
 from flask import request
 
 
-
 from config import AFFILIATE_MARKER
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+from config import get_logger
+logger = get_logger(__name__)
 
 
 def generate_affiliate_link(origin, destination, date_from, date_to, passengers):
@@ -22,7 +20,7 @@ def generate_affiliate_link(origin, destination, date_from, date_to, passengers)
     return f"{base_url}/{search_code}?adults={passengers}&utm_source={AFFILIATE_MARKER}"
 
 
-def travel_chatbot(user_input: str, trip_type: str = "round-trip", limit=None) -> dict:
+def travel_chatbot(user_input: str, trip_type: str = "round-trip", limit=None, direct_only=False) -> dict:
     info = extract_travel_entities(user_input)
     print("Extracted info:", info)
     logger.info(f"Extracted info: {info}")
@@ -111,17 +109,34 @@ def travel_chatbot(user_input: str, trip_type: str = "round-trip", limit=None) -
     children=children,
     infants=infants,
     cabin_class=cabin_class,
-    limit=limit
+    limit=limit,
+    direct_only=direct_only
     )
 
     if not flights:
-        return {
-            "flights": [],
-            "message": "😕 No flights found. Please try a different search.",
-            "summary": None,
-            "affiliate_link": None,
-            "trip_info": {}
-        }
+        if direct_only:
+            message = "😕 No direct flights found. Please try a different search with change of depart or/and Return date"
+            logger.info(message)
+            return {
+                "flights": [],
+                "message": message,
+                "summary": None,
+                "affiliate_link": None,
+                "trip_info": {}
+            }
+
+        else:
+            return {
+                "flights": [],
+                "message": "😕 No flights found for Returen. Please try a different search with depart and Return date ",
+                "summary": None,
+                "affiliate_link": None,
+                "trip_info": {}
+            }
+    else:
+        nr = len(flights)
+        # print("{} Flights found.".format(nr))
+        logger.info("{} Flights found for your search limit= {}".format(nr, limit))
 
     # ✅ Prepare flight data for template
     prepared_flights = []

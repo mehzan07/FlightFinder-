@@ -1,0 +1,6 @@
+[
+  { "city": "Paris", "name": "Charles de Gaulle Airport", "iata": "CDG" },
+  { "city": "Paris", "name": "Orly Airport", "iata": "ORY" },
+  { "city": "London", "name": "Heathrow Airport", "iata": "LHR" },
+  { "city": "Antalya", "name": "Antalya Airport", "iata": "AYT" }
+]

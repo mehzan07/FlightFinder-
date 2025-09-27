@@ -51,6 +51,14 @@
                 <option value="multi-city" {% if form_data and form_data.trip_type == 'multi-city' %}selected{% endif %}>Multi-city</option>
             </select>
         </div>
+                <!-- Direct Flights Only -->
+        <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" id="direct_only" name="direct_only"
+                {% if form_data and form_data.direct_only %}checked{% endif %}>
+            <label class="form-check-label" for="direct_only">
+                🛫 Show only direct flights
+            </label>
+        </div>
 
         <!-- Departure Date -->
         <div class="mb-3">
@@ -139,10 +147,12 @@ $(function() {
     // ✈️ Autocomplete for origin and destination
     function setupAirportAutocomplete(inputId) {
         $("#" + inputId).on("input", function() {
-            const query = $(this).val();
-            if (query.length < 2) return;
+            const rawInput = $(this).val();
+            const query = rawInput.trim().toLowerCase();  // ✅ Normalize input
 
-            $.getJSON("/autocomplete-airports", { query: query }, function(data) {
+            if (query.length < 1) return;  // ✅ Allow single-letter matches like "P"
+
+            $.getJSON("/travel-ui/autocomplete-airports", { query: query }, function(data)  {
                 const datalistId = inputId + "-list";
                 let options = "";
                 data.forEach(item => {
@@ -189,7 +199,7 @@ $(function() {
     // ⏳ Show loading spinner on form submit
     const form = document.querySelector("form");
     const loading = document.getElementById("loading");
-   if (form) {
+    if (form) {
         form.addEventListener("submit", (event) => {
             event.preventDefault();
             if (loading) {

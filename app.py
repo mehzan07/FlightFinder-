@@ -14,6 +14,9 @@ from iata_codes import city_to_iata
 from dotenv import load_dotenv
 import os
 
+from config import get_logger
+logger = get_logger(__name__)
+
 # === Load environment variables ===
 load_dotenv()
 IS_LOCAL = os.getenv("IS_LOCAL", "false").lower() == "true"

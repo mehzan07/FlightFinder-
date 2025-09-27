@@ -90,44 +90,44 @@
 
         <section class="row row-cols-1 row-cols-md-3 g-4">
           {% for flight in flights %}
-            <article class="col flight-card {% if loop.index0 >= 3 %}d-none extra-offer{% endif %}" data-price="{{ flight.price }}" data-airline="{{ flight.airline }}" data-stops="{{ flight.stops }}" data-duration="{{ flight.duration }}" data-depart="{{ flight.depart }}">
-              <div class="card h-100 shadow-sm {% if loop.index0 == 0 %}border-success{% endif %}">
-                <div class="card-body">
-                  <h5 class="card-title">
-                    {{ flight.airline }}
-                    {% if loop.index0 == 0 %}
-                      <span class="badge bg-success ms-2">Best Price</span>
+            {% if not direct_only or flight.stops == 0 %}
+              <article class="col flight-card {% if loop.index0 >= 3 %}d-none extra-offer{% endif %}" data-price="{{ flight.price }}" data-airline="{{ flight.airline }}" data-stops="{{ flight.stops }}" data-duration="{{ flight.duration }}" data-depart="{{ flight.depart }}">
+                <div class="card h-100 shadow-sm {% if loop.index0 == 0 %}border-success{% endif %}">
+                  <div class="card-body">
+                    <h5 class="card-title">
+                      {{ flight.airline }}
+                      {% if loop.index0 == 0 %}
+                        <span class="badge bg-success ms-2">Best Price</span>
+                      {% endif %}
+                    </h5>
+                    <p class="card-text">
+                      🏷️ <strong>Airline:</strong> {{ flight.airline }}<br />
+                      ✈️ <strong>Flight Number:</strong> {{ flight.flight_number }}<br />
+                      ⏱️ <strong>Duration:</strong> {{ flight.duration }} minutes<br />
+                      🛑 <strong>Stops:</strong> {{ flight.stops }}<br />
+                      💺 <strong>Cabin Class:</strong> {{ flight.cabin_class }}<br />
+                      📍 <strong>Origin:</strong> {{ flight.origin }}<br />
+                      🎯 <strong>Destination:</strong> {{ flight.destination }}<br />
+                      🛫 <strong>Depart:</strong> {{ flight.depart }}<br />
+                      {% if trip_type == 'one-way' %}
+                        🛬 <strong>Arrives:</strong> {{ flight.return }}<br />
+                      {% else %}
+                        🛬 <strong>Return:</strong> {{ flight.return }}<br />
+                      {% endif %}💰 <strong>Price:</strong> €{{ flight.price }}<br />
+                      🏢 <strong>Vendor:</strong> {{ flight.vendor }}
+                    </p>
+
+                    {% if flight.link %}
+                      <a href="{{ flight.link }}" class="btn btn-outline-primary mt-2" target="_blank">Book Now</a>
+                    {% else %}
+                      <span class="text-muted">No booking link available</span>
                     {% endif %}
-                  </h5>
-                  </h5>
-              <p class="card-text">
-                  🏷️ <strong>Airline:</strong> {{ flight.airline }}<br />
-                  ✈️ <strong>Flight Number:</strong> {{ flight.flight_number }}<br />
-                  ⏱️ <strong>Duration:</strong> {{ flight.duration }} minutes<br />
-                  🛑 <strong>Stops:</strong> {{ flight.stops }}<br />
-                  💺 <strong>Cabin Class:</strong> {{ flight.cabin_class }}<br />
-                  📍 <strong>Origin:</strong> {{ flight.origin }}<br />
-                  🎯 <strong>Destination:</strong> {{ flight.destination }}<br />
-                  🛫 <strong>Depart:</strong> {{ flight.depart }}<br />
-                  {% if trip_type == 'one-way' %}
-                      🛬 <strong>Arrives:</strong> {{ flight.return }}<br />
-                  {% else %}
-                      🛬 <strong>Return:</strong> {{ flight.return }}<br />
-                  {% endif %}
-                  💰 <strong>Price:</strong> €{{ flight.price }}<br />
-                  🏢 <strong>Vendor:</strong> {{ flight.vendor }}
-              </p>
 
-                  {% if flight.link %}
-                    <a href="{{ flight.link }}" class="btn btn-outline-primary mt-2" target="_blank">Book Now</a>
-                  {% else %}
-                    <span class="text-muted">No booking link available</span>
-                  {% endif %}
-
-                  <a href="{{ url_for('travel.view_offer', offer_id=flight.id) }}" class="btn btn-outline-info mt-2">View Details</a>
+                    <a href="{{ url_for('travel.view_offer', offer_id=flight.id) }}" class="btn btn-outline-info mt-2">View Details</a>
+                  </div>
                 </div>
-              </div>
-            </article>
+              </article>
+            {% endif %}
           {% endfor %}
         </section>
 
