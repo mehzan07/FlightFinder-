@@ -151,7 +151,9 @@ def view_offer(offer_id):
 
 @travel_bp.route("/autocomplete-airports")
 def autocomplete_airports():
+    logger.info("Autocomplete route hit!")
     query = request.args.get("query", "").strip().lower()
+    logger.debug(f"Query received: '{query}'")
 
     with open("airports.json", "r", encoding="utf-8") as f:
         airports = json.load(f)
@@ -164,7 +166,7 @@ def autocomplete_airports():
 
     results = [{
         "value": f'{a["city"]} ({a["iata"]})',
-        "label": f'{a["name"]} â€" {a["city"]} ({a["iata"]})'
+        "label": f'{a["name"]} — {a["city"]} ({a["iata"]})'
     } for a in matches]
 
     return jsonify(results)

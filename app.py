@@ -21,7 +21,7 @@ logger = get_logger(__name__)
 load_dotenv()
 IS_LOCAL = os.getenv("IS_LOCAL", "false").lower() == "true"
 if IS_LOCAL:
-    logging.info("Running in local mode — using mock API")
+    logging.info("Running in local mode.")
 
 AFFILIATE_MARKER = os.getenv("AFFILIATE_MARKER")
 

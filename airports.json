@@ -2,5 +2,104 @@
   { "city": "Paris", "name": "Charles de Gaulle Airport", "iata": "CDG" },
   { "city": "Paris", "name": "Orly Airport", "iata": "ORY" },
   { "city": "London", "name": "Heathrow Airport", "iata": "LHR" },
-  { "city": "Antalya", "name": "Antalya Airport", "iata": "AYT" }
+  { "city": "London", "name": "Gatwick Airport", "iata": "LGW" },
+  { "city": "London", "name": "Stansted Airport", "iata": "STN" },
+  { "city": "London", "name": "Luton Airport", "iata": "LTN" },
+  { "city": "Antalya", "name": "Antalya Airport", "iata": "AYT" },
+  { "city": "Stockholm", "name": "Stockholm Arlanda Airport", "iata": "ARN" },
+  { "city": "Stockholm", "name": "Stockholm Bromma Airport", "iata": "BMA" },
+  { "city": "Stockholm", "name": "Stockholm Skavsta Airport", "iata": "NYO" },
+  {
+    "city": "New York",
+    "name": "John F. Kennedy International Airport",
+    "iata": "JFK"
+  },
+  { "city": "New York", "name": "LaGuardia Airport", "iata": "LGA" },
+  {
+    "city": "New York",
+    "name": "Newark Liberty International Airport",
+    "iata": "EWR"
+  },
+  {
+    "city": "Los Angeles",
+    "name": "Los Angeles International Airport",
+    "iata": "LAX"
+  },
+  { "city": "Chicago", "name": "O'Hare International Airport", "iata": "ORD" },
+  { "city": "Miami", "name": "Miami International Airport", "iata": "MIA" },
+  {
+    "city": "San Francisco",
+    "name": "San Francisco International Airport",
+    "iata": "SFO"
+  },
+  { "city": "Tokyo", "name": "Tokyo Haneda Airport", "iata": "HND" },
+  {
+    "city": "Tokyo",
+    "name": "Tokyo Narita International Airport",
+    "iata": "NRT"
+  },
+  { "city": "Dubai", "name": "Dubai International Airport", "iata": "DXB" },
+  { "city": "Singapore", "name": "Singapore Changi Airport", "iata": "SIN" },
+  {
+    "city": "Hong Kong",
+    "name": "Hong Kong International Airport",
+    "iata": "HKG"
+  },
+  { "city": "Bangkok", "name": "Suvarnabhumi Airport", "iata": "BKK" },
+  {
+    "city": "Bangkok",
+    "name": "Don Mueang International Airport",
+    "iata": "DMK"
+  },
+  { "city": "Frankfurt", "name": "Frankfurt Airport", "iata": "FRA" },
+  { "city": "Munich", "name": "Munich Airport", "iata": "MUC" },
+  { "city": "Berlin", "name": "Berlin Brandenburg Airport", "iata": "BER" },
+  { "city": "Amsterdam", "name": "Amsterdam Schiphol Airport", "iata": "AMS" },
+  { "city": "Madrid", "name": "Madrid Barajas Airport", "iata": "MAD" },
+  { "city": "Barcelona", "name": "Barcelona El Prat Airport", "iata": "BCN" },
+  {
+    "city": "Rome",
+    "name": "Leonardo da Vinci International Airport",
+    "iata": "FCO"
+  },
+  { "city": "Rome", "name": "Ciampino Airport", "iata": "CIA" },
+  { "city": "Milan", "name": "Milan Malpensa Airport", "iata": "MXP" },
+  { "city": "Milan", "name": "Milan Linate Airport", "iata": "LIN" },
+  { "city": "Venice", "name": "Venice Marco Polo Airport", "iata": "VCE" },
+  { "city": "Zurich", "name": "Zurich Airport", "iata": "ZRH" },
+  { "city": "Geneva", "name": "Geneva Airport", "iata": "GVA" },
+  { "city": "Vienna", "name": "Vienna International Airport", "iata": "VIE" },
+  { "city": "Brussels", "name": "Brussels Airport", "iata": "BRU" },
+  { "city": "Copenhagen", "name": "Copenhagen Kastrup Airport", "iata": "CPH" },
+  { "city": "Oslo", "name": "Oslo Gardermoen Airport", "iata": "OSL" },
+  { "city": "Helsinki", "name": "Helsinki Vantaa Airport", "iata": "HEL" },
+  {
+    "city": "Athens",
+    "name": "Athens Eleftherios Venizelos Airport",
+    "iata": "ATH"
+  },
+  { "city": "Istanbul", "name": "Istanbul Airport", "iata": "IST" },
+  {
+    "city": "Istanbul",
+    "name": "Sabiha Gokcen International Airport",
+    "iata": "SAW"
+  },
+  {
+    "city": "Moscow",
+    "name": "Sheremetyevo International Airport",
+    "iata": "SVO"
+  },
+  { "city": "Moscow", "name": "Domodedovo Airport", "iata": "DME" },
+  { "city": "St. Petersburg", "name": "Pulkovo Airport", "iata": "LED" },
+  { "city": "Warsaw", "name": "Warsaw Chopin Airport", "iata": "WAW" },
+  { "city": "Prague", "name": "Prague Vaclav Havel Airport", "iata": "PRG" },
+  {
+    "city": "Budapest",
+    "name": "Budapest Ferenc Liszt International Airport",
+    "iata": "BUD"
+  },
+  { "city": "Lisbon", "name": "Lisbon Portela Airport", "iata": "LIS" },
+  { "city": "Dublin", "name": "Dublin Airport", "iata": "DUB" },
+  { "city": "Edinburgh", "name": "Edinburgh Airport", "iata": "EDI" },
+  { "city": "Manchester", "name": "Manchester Airport", "iata": "MAN" }
 ]

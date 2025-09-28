@@ -143,28 +143,44 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 {% raw %}
 <script>
-$(function() {
-    // ✈️ Autocomplete for origin and destination
+$(document).ready(function() {
+    console.log("JavaScript loaded successfully");
+    
+    // Autocomplete function
     function setupAirportAutocomplete(inputId) {
         $("#" + inputId).on("input", function() {
             const rawInput = $(this).val();
-            const query = rawInput.trim().toLowerCase();  // ✅ Normalize input
+            const query = rawInput.trim().toLowerCase();
 
-            if (query.length < 1) return;  // ✅ Allow single-letter matches like "P"
+            console.log("Input detected:", query);
 
-            $.getJSON("/travel-ui/autocomplete-airports", { query: query }, function(data)  {
-                const datalistId = inputId + "-list";
-                let options = "";
-                data.forEach(item => {
-                    options += `<option value="${item.value}">${item.label}</option>`;
+            if (query.length < 1) {
+                $("#" + inputId + "-list").html("");
+                return;
+            }
+
+            $.getJSON("/autocomplete-airports", { query: query })
+                .done(function(data) {
+                    console.log("Autocomplete success:", data);
+                    const datalistId = inputId + "-list";
+                    let options = "";
+                    data.forEach(item => {
+                        options += `<option value="${item.value}">${item.label}</option>`;
+                    });
+                    $("#" + datalistId).html(options);
+                })
+                .fail(function(xhr, status, error) {
+                    console.error("Autocomplete failed:", status, error);
                 });
-                $("#" + datalistId).html(options);
-            });
         });
     }
 
+    // Initialize autocomplete
     setupAirportAutocomplete("origin_code");
     setupAirportAutocomplete("destination_code");
+    
+    console.log("Autocomplete initialized");
+});
 
     // 📅 Date logic
     const dateFrom = document.getElementById("date_from");
