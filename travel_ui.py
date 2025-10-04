@@ -158,11 +158,13 @@ def autocomplete_airports():
     with open("airports.json", "r", encoding="utf-8") as f:
         airports = json.load(f)
 
-    matches = [a for a in airports if
-        query in a["city"].lower() or
-        query in a["name"].lower() or
-        a["iata"].lower().startswith(query)
-    ]
+    tokens = query.replace("(", "").replace(")", "").replace("-", "").split()
+
+    matches = [a for a in airports if any(
+        is_token_match(token, a) for token in tokens if len(token) >= 1
+    )]
+
+    logger.debug(f"Matched airports: {[a['iata'] for a in matches]}")
 
     results = [{
         "value": f'{a["city"]} ({a["iata"]})',
@@ -170,3 +172,11 @@ def autocomplete_airports():
     } for a in matches]
 
     return jsonify(results)
+
+
+def is_token_match(token, airport):
+    return (
+        airport["city"].lower().startswith(token) or
+        airport["name"].lower().startswith(token) or
+        airport["iata"].lower().startswith(token)
+    )
