@@ -180,3 +180,94 @@ def is_token_match(token, airport):
         airport["name"].lower().startswith(token) or
         airport["iata"].lower().startswith(token)
     )
+    
+    
+@travel_bp.route("/book-flight", methods=["POST"])
+def book_flight():
+    flight = {
+        "id": request.form.get("flight_id"),
+        "origin": request.form.get("origin"),
+        "destination": request.form.get("destination"),
+        "departure_date": request.form.get("departure_date"),
+        "return_date": request.form.get("return_date"),
+        "price": request.form.get("price"),
+        "airline": request.form.get("airline"),
+        "flight_number": request.form.get("flight_number"),
+        "cabin_class": request.form.get("cabin_class"),
+        "stops": request.form.get("stops"),
+        "duration": request.form.get("duration"),
+        "vendor": request.form.get("vendor"),
+    }
+
+    logger.info(f"Booking flight: {flight}")
+    return render_template("travel_confirm.html", flight=flight)
+
+
+
+@travel_bp.route("/confirm-booking", methods=["POST"])
+def confirm_booking():
+    flight_data = request.form.get("flight_data")
+    try:
+        flight = json.loads(flight_data)
+    except json.JSONDecodeError as e:
+        logger.error(f"JSON decode failed: {e}")
+        return "Invalid flight data", 400
+
+    name = request.form.get("name")
+    email = request.form.get("email")
+    phone = request.form.get("phone")
+
+    logger.info(f"Booking confirmed for {name} ({email}, {phone}) → {flight}")
+
+    return render_template("travel_confirm.html", flight=flight, name=name, email=email, phone=phone)
+
+
+
+
+@travel_bp.route("/enter-passenger-info", methods=["POST"])
+def enter_passenger_info():
+    flight_data = request.form.get("flight_data")
+    if not flight_data:
+        return "Missing flight data", 400
+
+    flight = json.loads(flight_data)
+    return render_template("passenger_form.html", flight=flight)
+
+
+
+@travel_bp.route("/payment", methods=["POST"])
+def payment():
+    flight_data = request.form.get("flight_data")
+    name = request.form.get("name")
+    email = request.form.get("email")
+    phone = request.form.get("phone")
+
+    try:
+        flight = json.loads(flight_data)
+    except json.JSONDecodeError as e:
+        logger.error(f"Failed to decode flight data: {e}")
+        return "Invalid flight data", 400
+
+    return render_template("payment_form.html", flight=flight, name=name, email=email, phone=phone)
+
+
+@travel_bp.route("/complete-booking", methods=["POST"])
+def complete_booking():
+    flight_data = request.form.get("flight_data")
+    name = request.form.get("name")
+    email = request.form.get("email")
+    phone = request.form.get("phone")
+    card_number = request.form.get("card_number")
+    expiry = request.form.get("expiry")
+    cvv = request.form.get("cvv")
+
+    try:
+        flight = json.loads(flight_data)
+    except json.JSONDecodeError as e:
+        logger.error(f"Failed to decode flight data: {e}")
+        return "Invalid flight data", 400
+
+    logger.info(f"✅ Booking completed for {name} ({email}, {phone}) → {flight}")
+    logger.info(f"💳 Payment info: Card ending in {card_number[-4:]}, Exp: {expiry}")
+
+    return render_template("booking_success.html", flight=flight, name=name)

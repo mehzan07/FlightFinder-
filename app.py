@@ -42,6 +42,11 @@ app.config['DEBUG'] = FLASK_ENV == "development"
 # === Register Blueprints ===
 app.register_blueprint(travel_bp)
 
+
+@app.errorhandler(500)
+def internal_error(error):
+    return f"Internal Server Error: {error}", 500
+
 # === Logging ===
 logging.basicConfig(
     level=logging.DEBUG if app.config['DEBUG'] else logging.INFO,

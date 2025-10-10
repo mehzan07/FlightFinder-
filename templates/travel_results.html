@@ -117,11 +117,21 @@
                       🏢 <strong>Vendor:</strong> {{ flight.vendor }}
                     </p>
 
-                    {% if flight.link %}
-                      <a href="{{ flight.link }}" class="btn btn-outline-primary mt-2" target="_blank">Book Now</a>
-                    {% else %}
-                      <span class="text-muted">No booking link available</span>
-                    {% endif %}
+                    <form action="/book-flight" method="post" class="mt-2">
+                      <input type="hidden" name="flight_id" value="{{ flight.id }}" />
+                      <input type="hidden" name="origin" value="{{ flight.origin }}" />
+                      <input type="hidden" name="destination" value="{{ flight.destination }}" />
+                      <input type="hidden" name="departure_date" value="{{ flight.depart }}" />
+                      <input type="hidden" name="return_date" value="{{ flight.return }}" />
+                      <input type="hidden" name="price" value="{{ flight.price }}" />
+                      <input type="hidden" name="airline" value="{{ flight.airline }}" />
+                      <input type="hidden" name="flight_number" value="{{ flight.flight_number }}" />
+                      <input type="hidden" name="cabin_class" value="{{ flight.cabin_class }}" />
+                      <input type="hidden" name="stops" value="{{ flight.stops }}" />
+                      <input type="hidden" name="duration" value="{{ flight.duration }}" />
+                      <input type="hidden" name="vendor" value="{{ flight.vendor }}" />
+                      <button type="submit" class="btn btn-success">Book Now</button>
+                    </form>
 
                     <a href="{{ url_for('travel.view_offer', offer_id=flight.id) }}" class="btn btn-outline-info mt-2">View Details</a>
                   </div>
