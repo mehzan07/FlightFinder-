@@ -128,12 +128,51 @@ def results():
     result = travel_form_handler(destination, departure_date, return_date)
     return render_template("travel_results.html", **result)
 
+
+
 @app.route("/confirm", methods=["POST"])
 def confirm():
     selected_flight = request.form.get("selected_flight")
     if not selected_flight:
         return "No flight selected", 400
-    return render_template("confirmation.html", flight=selected_flight)
+
+    # Assuming selected_flight is a JSON string
+    import json
+    try:
+        flight = json.loads(selected_flight)
+    except Exception:
+        return "Invalid flight data", 400
+
+    return render_template("confirmation.html", flight=flight)
+
+
+@app.route("/finalize-booking", methods=["POST"])
+def finalize_booking():
+    try:
+        card_number = request.form.get("card_number")
+        expiry = request.form.get("expiry")
+        cvv = request.form.get("cvv")
+        cardholder_name = request.form.get("cardholder_name")
+
+        # Get flight data from hidden input
+        import json
+        flight_json = request.form.get("flight_data")
+        flight = json.loads(flight_json) if flight_json else {}
+
+        if not all([card_number, expiry, cvv, cardholder_name]):
+            raise ValueError("Missing one or more payment fields")
+
+        app.logger.info(f"Payment received from {cardholder_name}, card ending in {card_number[-4:]}")
+
+        return render_template("booking_success.html", name=cardholder_name, flight=flight)
+
+    except Exception as e:
+        import traceback
+        app.logger.error("Error during finalize_booking:\n" + traceback.format_exc())
+        return "Something went wrong during payment processing", 500
+    
+
+
 
 # === Health Check ===
 @app.route("/health", methods=["GET"])
