@@ -130,20 +130,32 @@ def results():
 
 
 
-@app.route("/confirm", methods=["POST"])
-def confirm():
-    selected_flight = request.form.get("selected_flight")
-    if not selected_flight:
-        return "No flight selected", 400
-
-    # Assuming selected_flight is a JSON string
-    import json
+@app.route("/confirm-booking", methods=["POST"])
+def confirm_booking():
     try:
-        flight = json.loads(selected_flight)
-    except Exception:
-        return "Invalid flight data", 400
+        # Get passenger info
+        name = request.form.get("name")
+        email = request.form.get("email")
+        phone = request.form.get("phone")
 
-    return render_template("confirmation.html", flight=flight)
+        # Get flight info
+        import json
+        flight_json = request.form.get("flight_data")
+        flight = json.loads(flight_json) if flight_json else {}
+
+        if not all([name, email, phone, flight]):
+            raise ValueError("Missing passenger or flight data")
+
+        # Log or store booking
+        app.logger.info(f"Booking confirmed for {name} ({email}, {phone}) → {flight}")
+
+        # Pass everything to payment form
+        return render_template("payment_form.html", flight=flight, passenger={"name": name, "email": email, "phone": phone})
+
+    except Exception as e:
+        import traceback
+        app.logger.error("Error during confirm_booking:\n" + traceback.format_exc())
+        return "Something went wrong during booking confirmation", 500
 
 
 @app.route("/finalize-booking", methods=["POST"])
