@@ -1,15 +1,24 @@
-from flask import Blueprint, render_template, request, jsonify
+from flask import Blueprint, redirect, render_template, request, jsonify, url_for
 from travel import travel_chatbot
 from datetime import datetime
 from config import DEBUG_MODE, FEATURED_FLIGHT_LIMIT
 import json
+
+from utils import extract_travel_entities
+from flight_search import search_flights
+from iata_codes import city_to_iata
+
+from travel import generate_booking_reference  # ✅ import from travel.py
+from travel import travel_form_handler
+
+
 
 from config import get_logger
 logger = get_logger(__name__)
 
 
 offers_db = {}
-travel_bp = Blueprint("travel", __name__)
+travel_bp = Blueprint("travel", __name__) 
 
 def format_datetime(dt_str):
     try:
@@ -204,35 +213,28 @@ def book_flight():
 
 
 
-@travel_bp.route("/confirm-booking", methods=["POST"])
-def confirm_booking():
-    flight_data = request.form.get("flight_data")
-    try:
-        flight = json.loads(flight_data)
-    except json.JSONDecodeError as e:
-        logger.error(f"JSON decode failed: {e}")
-        return "Invalid flight data", 400
-
-    name = request.form.get("name")
-    email = request.form.get("email")
-    phone = request.form.get("phone")
-
-    logger.info(f"Booking confirmed for {name} ({email}, {phone}) → {flight}")
-
-    return render_template("travel_confirm.html", flight=flight, name=name, email=email, phone=phone)
-
-
 
 
 @travel_bp.route("/enter-passenger-info", methods=["POST"])
 def enter_passenger_info():
     flight_data = request.form.get("flight_data")
-    if not flight_data:
-        return "Missing flight data", 400
+    name = request.form.get("name")
+    email = request.form.get("email")
+    phone = request.form.get("phone")
 
-    flight = json.loads(flight_data)
-    return render_template("passenger_form.html", flight=flight)
+    try:
+        flight = json.loads(flight_data)
+    except json.JSONDecodeError as e:
+        logger.error(f"Failed to decode flight data: {e}")
+        return "Invalid flight data", 400
 
+    passenger = {
+        "name": name,
+        "email": email,
+        "phone": phone
+    }
+
+    return render_template("travel_confirm.html", flight=flight, passenger=passenger)
 
 
 @travel_bp.route("/payment", methods=["POST"])
@@ -248,7 +250,12 @@ def payment():
         logger.error(f"Failed to decode flight data: {e}")
         return "Invalid flight data", 400
 
-    return render_template("payment_form.html", flight=flight, name=name, email=email, phone=phone)
+    passenger = {
+        "name": name,
+        "email": email,
+        "phone": phone
+    }
+    return render_template("payment_form.html", flight=flight, passenger=passenger)
 
 
 @travel_bp.route("/complete-booking", methods=["POST"])
@@ -271,3 +278,142 @@ def complete_booking():
     logger.info(f"💳 Payment info: Card ending in {card_number[-4:]}, Exp: {expiry}")
 
     return render_template("booking_success.html", flight=flight, name=name)
+
+
+@travel_bp.route("/", methods=["GET"])
+def home_page():
+    return redirect(url_for("travel.flightfinder"))
+
+
+# === Primary FlightFinder Route ===
+
+@travel_bp.route("/flightfinder", methods=["GET", "POST"])
+def flightfinder():
+    print("FlightFinder route triggered", flush=True)
+
+    if request.method == "POST":
+        user_input = request.form.get("user_input", "").strip()
+        info = extract_travel_entities(user_input)
+
+        origin_code = city_to_iata.get(info["origin"].lower())
+        destination_code = city_to_iata.get(info["destination"].lower())
+
+        if not origin_code or not destination_code:
+            return render_template("travel_results.html", message="🌍 Unknown city. Try major cities like Paris or Tokyo.")
+
+        if not info["date_from"] or not info["date_to"]:
+            return render_template("travel_results.html", message="📅 Invalid dates. Please use YYYY-MM-DD format.")
+
+        info["date_from_str"] = info["date_from"].strftime("%Y-%m-%d")
+        info["date_to_str"] = info["date_to"].strftime("%Y-%m-%d")
+
+        # ✅ Extract dynamic values from form
+        trip_type = request.form.get("trip_type", "round-trip")
+        adults = int(request.form.get("passengers", 1))
+        children = int(request.form.get("children", 0))
+        infants = int(request.form.get("infants", 0))
+        cabin_class = request.form.get("cabin_class", "economy").lower()
+
+        # ✅ Store last search in session
+        session["last_search"] = {
+            "origin": origin_code,
+            "destination": destination_code,
+            "departure": info["date_from_str"],
+            "return": info["date_to_str"],  # ✅ Renamed for clarity
+            "trip_type": trip_type,
+            "adults": adults,
+            "children": children,
+            "infants": infants,
+            "cabin_class": cabin_class
+        }
+
+
+        # ✅ Call the search function with all required arguments
+        flights = search_flights(
+            origin_code, destination_code,
+            info["date_from_str"], info["date_to_str"],
+            trip_type=trip_type,
+            adults=adults, children=children, infants=infants,
+            cabin_class=cabin_class
+        )
+
+        if not flights:
+            fallback_message = "😕 No flights found or API error occurred. Try again later or adjust your search."
+            return render_template("travel_results.html", message=fallback_message, info=info)
+
+        return render_template("travel_results.html", flights=flights, info=info)
+
+   # return render_template("travel_form.html", mode="chat")
+    return render_template("travel_form.html", mode="chat", form_data={})
+
+# === Travel Results & Confirmation ===
+
+@travel_bp.route("/results", methods=["POST"])
+def results():
+    destination = request.form['destination']
+    departure_date = request.form['departure_date']
+    return_date = request.form['return_date']
+    result = travel_form_handler(destination, departure_date, return_date)
+    return render_template("travel_results.html", **result)
+
+
+
+
+@travel_bp.route("/confirm-booking", methods=["POST"])
+def confirm_booking():
+    try:
+        # Passenger info
+        name = request.form.get("name")
+        email = request.form.get("email")
+        phone = request.form.get("phone")
+
+        # Flight info
+        import json
+        flight_json = request.form.get("flight_data")
+        flight = json.loads(flight_json) if flight_json else {}
+
+        if not all([name, email, phone, flight]):
+            raise ValueError("Missing passenger or flight data")
+
+        passenger = {"name": name, "email": email, "phone": phone}
+
+        return render_template("payment_form.html", flight=flight, passenger=passenger)
+
+    except Exception as e:
+        import traceback
+        logger.error("Error during confirm_booking:\n" + traceback.format_exc())
+        return "Something went wrong during booking confirmation", 500
+
+
+@travel_bp.route("/finalize-booking", methods=["POST"])
+def finalize_booking():
+    try:
+        card_number = request.form.get("card_number")
+        expiry = request.form.get("expiry")
+        cvv = request.form.get("cvv")
+        cardholder_name = request.form.get("cardholder_name")
+
+        # Get flight data from hidden input
+        import json
+        flight_json = request.form.get("flight_data")
+        flight = json.loads(flight_json) if flight_json else {}
+
+        if not all([card_number, expiry, cvv, cardholder_name]):
+            raise ValueError("Missing one or more payment fields")
+
+        logger.info(f"Payment received from {cardholder_name}, card ending in {card_number[-4:]}")
+
+        return render_template("booking_success.html", name=cardholder_name, flight=flight)
+
+    except Exception as e:
+        import traceback
+        logger.error("Error during finalize_booking:\n" + traceback.format_exc())
+        return "Something went wrong during payment processing", 500
+    
+
+
+
+# === Health Check ===
+@travel_bp.route("/health", methods=["GET"])
+def health():
+    return jsonify({'status': 'ok', 'timestamp': datetime.utcnow().isoformat()})

@@ -7,6 +7,10 @@ from mock_data import AIRLINE_NAMES  # ✅ Added import
 from datetime import date, datetime
 from flask import request
 
+import random
+import string
+from datetime import datetime
+
 
 from config import AFFILIATE_MARKER
 
@@ -238,3 +242,11 @@ def travel_form_handler(form_data):
     }
 
     return results
+
+
+
+def generate_booking_reference():
+    prefix = "FF"
+    date_str = datetime.now().strftime("%Y%m%d")
+    random_str = ''.join(random.choices(string.ascii_uppercase + string.digits, k=5))
+    return f"{prefix}-{date_str}-{random_str}"

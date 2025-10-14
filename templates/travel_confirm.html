@@ -9,12 +9,12 @@
       <h2 class="mb-4">✅ Flight Selected</h2>
       <div class="card p-4 shadow-sm">
 
-        {% if name and email and phone %}
+        {% if passenger %}
           <h5 class="mb-3">👤 Passenger Information</h5>
           <ul class="list-group mb-4">
-            <li class="list-group-item"><strong>Name:</strong> {{ name }}</li>
-            <li class="list-group-item"><strong>Email:</strong> {{ email }}</li>
-            <li class="list-group-item"><strong>Phone:</strong> {{ phone }}</li>
+            <li class="list-group-item"><strong>Name:</strong> {{ passenger.name }}</li>
+            <li class="list-group-item"><strong>Email:</strong> {{ passenger.email }}</li>
+            <li class="list-group-item"><strong>Phone:</strong> {{ passenger.phone }}</li>
           </ul>
         {% endif %}
 
@@ -35,7 +35,7 @@
           </tbody>
         </table>
 
-        {% if not name %}
+        {% if not passenger %}
           <form action="/enter-passenger-info" method="post">
             <input type="hidden" name="flight_data" value='{{ flight | tojson | safe }}' />
             <button type="submit" class="btn btn-primary mt-3">🧾 Continue to Booking</button>
@@ -43,9 +43,7 @@
         {% else %}
           <form action="/payment" method="post">
             <input type="hidden" name="flight_data" value='{{ flight | tojson | safe }}'>
-            <input type="hidden" name="name" value="{{ name }}">
-            <input type="hidden" name="email" value="{{ email }}">
-            <input type="hidden" name="phone" value="{{ phone }}">
+            <input type="hidden" name="passenger_data" value='{{ passenger | tojson | safe }}'>
             <button type="submit" class="btn btn-warning mt-3">💳 Proceed to Payment</button>
           </form>
           <a href="/travel-ui" class="btn btn-success mt-3 ms-2">✈️ Plan Another Trip</a>

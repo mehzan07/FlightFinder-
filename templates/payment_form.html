@@ -6,10 +6,34 @@
   </head>
   <body class="bg-light">
     <div class="container mt-5">
-      <h2 class="mb-4">💳 Enter Payment Details</h2>
-      <form action="/finalize-booking" method="post">
-        <!-- Hidden flight data passed from previous step -->
-        <input type="hidden" name="flight_data" value='{{ flight | tojson }}' />
+      <h2 class="mb-4">💳 Confirm Payment</h2>
+
+      <!-- Passenger Summary -->
+      <div class="card mb-4 p-3">
+        <h5 class="mb-3">👤 Passenger Information</h5>
+        <p><strong>Name:</strong> {{ passenger.name or 'Mehrdad Zandi' }}</p>
+        <p><strong>Email:</strong> {{ passenger.email or 'mehzan07@yahoo.com' }}</p>
+        <p><strong>Phone:</strong> {{ passenger.phone or '0730318625' }}</p>
+      </div>
+
+      <!-- Flight Summary -->
+      <div class="card mb-4 p-3">
+        <h5 class="mb-3">✈️ Flight Details</h5>
+        <ul class="list-group">
+          <li class="list-group-item"><strong>From:</strong> {{ flight.origin }}</li>
+          <li class="list-group-item"><strong>To:</strong> {{ flight.destination }}</li>
+          <li class="list-group-item"><strong>Departure:</strong> {{ flight.departure_date }}</li>
+          <li class="list-group-item"><strong>Return:</strong> {{ flight.return_date }}</li>
+          <li class="list-group-item"><strong>Airline:</strong> {{ flight.airline }}</li>
+          <li class="list-group-item"><strong>Price:</strong> {{ flight.price }} {{ flight.currency }}</li>
+        </ul>
+      </div>
+
+      <!-- Payment Form -->
+      <form action="/finalize-booking" method="post" class="card p-4 shadow-sm">
+        <!-- Hidden data -->
+        <input type="hidden" name="flight_data" value='{{ flight | tojson | safe }}' />
+        <input type="hidden" name="passenger_data" value='{{ passenger | tojson | safe }}' />
 
         <div class="mb-3">
           <label for="card_number" class="form-label">Card Number</label>
@@ -35,7 +59,7 @@
         <div class="mb-3">
           <label for="cardholder_name" class="form-label">Cardholder Name</label>
           <input type="text" id="cardholder_name" class="form-control" name="cardholder_name"
-                 value="Mehrdad Zandi" placeholder="Full name on card" required />
+                 value="{{ passenger.name or 'Mehrdad Zandi' }}" placeholder="Full name on card" required />
         </div>
 
         <button type="submit" class="btn btn-success">💳 Confirm Payment</button>
