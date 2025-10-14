@@ -33,7 +33,11 @@
       <form action="/finalize-booking" method="post" class="card p-4 shadow-sm">
         <!-- Hidden data -->
         <input type="hidden" name="flight_data" value='{{ flight | tojson | safe }}' />
-        <input type="hidden" name="passenger_data" value='{{ passenger | tojson | safe }}' />
+        <input type="hidden" name="passenger_data" value='{{ {
+          "name": passenger.name or "Mehrdad Zandi",
+          "email": passenger.email or "mehzan07@yahoo.com",
+          "phone": passenger.phone or "0730318625"
+        } | tojson | safe }}' />
 
         <div class="mb-3">
           <label for="card_number" class="form-label">Card Number</label>

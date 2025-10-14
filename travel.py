@@ -10,7 +10,7 @@ from flask import request
 import random
 import string
 from datetime import datetime
-
+from database import db
 
 from config import AFFILIATE_MARKER
 

@@ -3,6 +3,7 @@ from travel import travel_chatbot
 from datetime import datetime
 from config import DEBUG_MODE, FEATURED_FLIGHT_LIMIT
 import json
+from database import db
 
 from utils import extract_travel_entities
 from flight_search import search_flights
@@ -11,6 +12,10 @@ from iata_codes import city_to_iata
 from travel import generate_booking_reference  # ✅ import from travel.py
 from travel import travel_form_handler
 
+from models import Booking, db
+from travel import generate_booking_reference
+from models import Booking
+from db import save_booking
 
 
 from config import get_logger
@@ -388,31 +393,49 @@ def confirm_booking():
 @travel_bp.route("/finalize-booking", methods=["POST"])
 def finalize_booking():
     try:
-        card_number = request.form.get("card_number")
-        expiry = request.form.get("expiry")
-        cvv = request.form.get("cvv")
-        cardholder_name = request.form.get("cardholder_name")
-
-        # Get flight data from hidden input
-        import json
+        # Get form data
         flight_json = request.form.get("flight_data")
+        passenger_json = request.form.get("passenger_data")
+
+        # Debug: log raw form data
+        print("Raw flight_data:", flight_json)
+        print("Raw passenger_data:", passenger_json)
+
+        # Parse JSON strings
         flight = json.loads(flight_json) if flight_json else {}
+        passenger = json.loads(passenger_json) if passenger_json else {}
 
-        if not all([card_number, expiry, cvv, cardholder_name]):
-            raise ValueError("Missing one or more payment fields")
+        # Debug: log parsed data
+        print("Parsed flight:", flight)
+        print("Parsed passenger:", passenger)
 
-        logger.info(f"Payment received from {cardholder_name}, card ending in {card_number[-4:]}")
+        # Validate passenger fields
+        required_fields = ["name", "email", "phone"]
+        for field in required_fields:
+            if field not in passenger or not passenger[field]:
+                raise ValueError(f"Missing passenger field: {field}")
 
-        return render_template("booking_success.html", name=cardholder_name, flight=flight)
+        # Generate booking reference
+        reference = generate_booking_reference()
+
+        # Save to database
+        save_booking(reference, passenger, flight_json)
+
+        # Render confirmation page
+        return render_template(
+            "booking_success.html",
+            reference=reference,
+            passenger=passenger,
+            flight=flight
+        )
 
     except Exception as e:
-        import traceback
-        logger.error("Error during finalize_booking:\n" + traceback.format_exc())
-        return "Something went wrong during payment processing", 500
+        print(f"Booking error: {e}")
+        return f"Internal Server Error: {e}", 500
     
-
-
-
+    
+    
+    
 # === Health Check ===
 @travel_bp.route("/health", methods=["GET"])
 def health():
