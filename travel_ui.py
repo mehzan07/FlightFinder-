@@ -31,6 +31,10 @@ def format_datetime(dt_str):
         return dt.strftime("%b %d, %H:%M")
     except Exception:
         return "Not available"
+    
+    
+    
+    
 
 @travel_bp.route("/travel-ui", methods=["GET", "POST"])
 def travel_ui():
@@ -152,7 +156,9 @@ def travel_ui():
             direct_only=direct_only
         )
 
-    return render_template("travel_form.html")
+    return render_template("travel_form.html", form_data={}, errors=[])
+
+
 
 @travel_bp.route("/offer/<offer_id>")
 def view_offer(offer_id):
@@ -433,9 +439,13 @@ def finalize_booking():
         print(f"Booking error: {e}")
         return f"Internal Server Error: {e}", 500
     
-    
-    
-    
+@travel_bp.route("/booking-history")
+def booking_history():
+    from db import get_booking_history
+    bookings = get_booking_history()
+    return render_template("booking_history.html", bookings=bookings)
+
+
 # === Health Check ===
 @travel_bp.route("/health", methods=["GET"])
 def health():

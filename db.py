@@ -7,6 +7,8 @@ import os
 from sqlalchemy.exc import SQLAlchemyError
 
 from database import db
+from models import Booking
+
 
 # === Load environment variables ===
 load_dotenv()
@@ -18,6 +20,10 @@ if not os.getenv("DATABASE_URL"):
 # --------------------------
 # Booking Helper Functions
 # --------------------------
+
+def get_booking_history():
+    return Booking.query.order_by(Booking.timestamp.desc()).all()
+
 
 def save_booking(reference, passenger, flight_json):
     from models import Booking  # Lazy import to avoid circular dependencies

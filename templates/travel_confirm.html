@@ -46,7 +46,11 @@
             <input type="hidden" name="passenger_data" value='{{ passenger | tojson | safe }}'>
             <button type="submit" class="btn btn-warning mt-3">💳 Proceed to Payment</button>
           </form>
-          <a href="/travel-ui" class="btn btn-success mt-3 ms-2">✈️ Plan Another Trip</a>
+
+          <div class="mt-3 d-flex gap-2">
+            <a href="/travel-ui" class="btn btn-success">✈️ Plan Another Trip</a>
+            <a href="/booking-history" class="btn btn-outline-primary">📜 View Booking History</a>
+          </div>
         {% endif %}
 
       </div>
